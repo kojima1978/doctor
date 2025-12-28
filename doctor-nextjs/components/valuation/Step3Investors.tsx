@@ -74,7 +74,7 @@ export default function Step3Investors({
             </table>
 
             <Button
-                variant="success"
+                variant="primary"
                 className="mt-3 mb-5 text-sm px-4 py-2"
                 onClick={addInvestorRow}
             >

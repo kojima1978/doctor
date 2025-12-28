@@ -25,6 +25,9 @@ export interface CalculationResult {
   // 会社規模
   companySize: string;
 
+  // 特定の評価会社の該当判定
+  specialCompanyType: string;
+
   // 出資金額総額（千円）
   totalCapital: number;
 
@@ -60,5 +63,6 @@ export interface CalculationResult {
     name: string;
     amount: number;
     evaluationValue: number;
+    giftTax: number;
   }>;
 }

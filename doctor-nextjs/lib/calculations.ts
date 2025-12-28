@@ -132,7 +132,7 @@ function calculateSimilarIndustryValue(
   formData: FormData,
   sizeMultiplier: number,
   totalShares: number
-): number {
+): { value: number; specialCompanyType: string } {
   // 類似業種の株価（仮の値 - 実際は国税庁公表データを使用）
   const A = 532; // 類似業種の令和6年平均株価
 
@@ -178,8 +178,10 @@ function calculateSimilarIndustryValue(
   const netAssetPerShare = totalShares > 0 ? netAsset / totalShares : 0;
   const d = Math.floor(netAssetPerShare);
 
-  // d1の計算: dと同じ（直前期）
-  const d1 = d;
+  // d1の計算: 直前期の帳簿価額による純資産
+  const netAsset1 = formData.currentPeriodNetAsset * 1000;
+  const netAssetPerShare1 = totalShares > 0 ? netAsset1 / totalShares : 0;
+  const d1 = Math.floor(netAssetPerShare1);
 
   // d2の計算: 直前々期の純資産
   const netAsset2 = formData.previousPeriodNetAsset * 1000;
@@ -190,7 +192,7 @@ function calculateSimilarIndustryValue(
   if (c1 === 0 && d1 === 0) {
     // 比準要素数0の会社は類似業種比準価額を使用できない
     // 純資産価額方式のみとなるため、類似業種比準価額は0を返す
-    return 0;
+    return { value: 0, specialCompanyType: '比準0（比準要素数0の会社）' };
   }
 
   // 比準要素数1の会社判定
@@ -200,7 +202,7 @@ function calculateSimilarIndustryValue(
   if (isOneElementZero_d1 && isOneOrBothElementZero_d2) {
     // 比準要素数1の会社
     // 類似業種比準価額を使用できない（純資産価額方式のみ）
-    return 0;
+    return { value: 0, specialCompanyType: '比準1（比準要素数1の会社）' };
   }
 
   // 比準割合の計算（医療法人は配当を除く2要素で計算）
@@ -218,7 +220,7 @@ function calculateSimilarIndustryValue(
   // 類似業種比準価額（50円あたり）
   const S_50 = Math.floor(A * avgRatio * sizeMultiplier);
 
-  return S_50;
+  return { value: S_50, specialCompanyType: '非該当' };
 }
 
 /**
@@ -311,11 +313,14 @@ export function calculateEvaluation(formData: FormData): CalculationResult {
   const totalShares = totalInvestment / 50;
 
   // 類似業種比準価額（50円あたり）
-  const S = calculateSimilarIndustryValue(
+  const similarIndustryResult = calculateSimilarIndustryValue(
     formData,
     companySizeResult.sizeMultiplier,
     totalShares
   );
+
+  const S = similarIndustryResult.value;
+  const specialCompanyType = similarIndustryResult.specialCompanyType;
 
   // 純資産価額（50円あたり）
   const N = calculateNetAssetValue(formData, totalShares);
@@ -333,25 +338,65 @@ export function calculateEvaluation(formData: FormData): CalculationResult {
   // 出資持分評価額総額（千円単位）
   const totalEvaluationValue = Math.round((totalShares * perShareValue) / 1000);
 
-  // 持分なし医療法人移行時のみなし贈与税額（最高税率55% - 控除20%を考慮して約49.4%）
-  const deemedGiftTax = Math.round(totalEvaluationValue * 0.494);
+  // 贈与税を計算する関数
+  const calculateGiftTax = (evaluationValue: number): number => {
+    // 基礎控除後の課税価格（千円単位から万円単位に変換）
+    const taxableAmount = evaluationValue - 110; // 基礎控除110万円
 
-  // 各出資者の評価額を計算
+    if (taxableAmount <= 0) {
+      return 0; // 基礎控除以下の場合は税額0
+    }
+
+    let tax = 0;
+
+    // 贈与税の速算表（一般税率）を適用
+    if (taxableAmount <= 200) {
+      tax = taxableAmount * 0.1;
+    } else if (taxableAmount <= 300) {
+      tax = taxableAmount * 0.15 - 10;
+    } else if (taxableAmount <= 400) {
+      tax = taxableAmount * 0.2 - 25;
+    } else if (taxableAmount <= 600) {
+      tax = taxableAmount * 0.3 - 65;
+    } else if (taxableAmount <= 1000) {
+      tax = taxableAmount * 0.4 - 125;
+    } else if (taxableAmount <= 1500) {
+      tax = taxableAmount * 0.45 - 175;
+    } else if (taxableAmount <= 3000) {
+      tax = taxableAmount * 0.5 - 250;
+    } else {
+      tax = taxableAmount * 0.55 - 400;
+    }
+
+    return Math.round(tax);
+  };
+
+  // 各出資者の評価額と贈与税を計算
   const investorResults = formData.investors.map((investor) => {
     const shares = investor.amount / 50;
     const evaluationValue = Math.round((shares * perShareValue) / 1000);
+    const giftTax = calculateGiftTax(evaluationValue);
     return {
       name: investor.name,
       amount: investor.amount,
       evaluationValue,
+      giftTax,
     };
   });
 
+  // 持分なし医療法人移行時のみなし贈与税額を計算
+  // 各出資者の贈与税を合計する
+  const deemedGiftTax = investorResults.reduce(
+    (totalTax, investor) => totalTax + investor.giftTax,
+    0
+  );
+
   return {
     companySize: companySizeResult.sizeLabel,
+    specialCompanyType,
     totalCapital: Math.round(totalInvestment / 1000),
     totalShares,
-    inheritanceTaxValue: Math.round(formData.netAssetTaxValue),
+    inheritanceTaxValue: totalEvaluationValue,
     perShareNetAssetValue: N,
     perShareSimilarIndustryValue: S,
     perShareValue,

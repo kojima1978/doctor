@@ -62,15 +62,22 @@ export default function Step2FinancialData({
                     <tr>
                         <td className="border border-gray-400 p-2 text-left">
                             「貸借対照表」の「純資産の部（又は資本の部）合計」の金額（注１）
-                            <button
-                                type="button"
-                                className="bg-blue-500 text-white px-2 py-1 ml-2 rounded text-xs"
+                            <Button
+                                variant="primary"
+                                className="ml-2 text-xs !px-2 !py-1"
                                 onClick={() => setShowPopup1(!showPopup1)}
                             >
                                 正確な評価
-                            </button>
+                            </Button>
                             {showPopup1 && (
                                 <div className="absolute bg-gray-50 border border-gray-400 p-3 rounded mt-2 text-xs max-w-md z-10">
+                                    <button
+                                        type="button"
+                                        className="absolute top-1 right-2 text-gray-600 hover:text-gray-900 font-bold text-lg"
+                                        onClick={() => setShowPopup1(false)}
+                                    >
+                                        ×
+                                    </button>
                                     もしくは
                                     <br />
                                     法人税申告書の別表五(一)上、「Ⅰ利益積立金額」及び
@@ -111,8 +118,8 @@ export default function Step2FinancialData({
                             <br />
                             「純資産」の金額を上書き入力してください。
                             <Button
-                                variant="success"
-                                className="ml-2 text-xs px-3 py-1.5"
+                                variant="primary"
+                                className="ml-2 text-xs !px-2 !py-1"
                                 onClick={copyToTaxValue}
                             >
                                 複写
@@ -145,15 +152,22 @@ export default function Step2FinancialData({
                     <tr>
                         <td className="border border-gray-400 p-2 text-left">
                             「損益計算書」の「税引前当期純利益」の金額
-                            <button
-                                type="button"
-                                className="bg-blue-500 text-white px-2 py-1 ml-2 rounded text-xs"
+                            <Button
+                                variant="primary"
+                                className="ml-2 text-xs !px-2 !py-1"
                                 onClick={() => setShowPopup2(!showPopup2)}
                             >
                                 正確な評価
-                            </button>
+                            </Button>
                             {showPopup2 && (
                                 <div className="absolute bg-gray-50 border border-gray-400 p-3 rounded mt-2 text-xs max-w-md z-10">
+                                    <button
+                                        type="button"
+                                        className="absolute top-1 right-2 text-gray-600 hover:text-gray-900 font-bold text-lg"
+                                        onClick={() => setShowPopup2(false)}
+                                    >
+                                        ×
+                                    </button>
                                     もしくは
                                     <br />
                                     法人税申告書上の「所得金額」に下記の金額を加減算した金額を入力してください。

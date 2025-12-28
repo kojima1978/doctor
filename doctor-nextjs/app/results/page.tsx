@@ -44,48 +44,53 @@ export default function Results() {
       <h2 className="text-2xl font-bold mt-8">
         1．出資持分評価額・持分なし医療法人移行時のみなし贈与税額
       </h2>
-      <table className="border-collapse w-full mt-3">
-        <thead>
-          <tr>
-            <th className="border border-gray-400 bg-gray-100 p-2 text-left">
-              項目
-            </th>
-            <th className="border border-gray-400 bg-gray-100 p-2 text-center">
-              金額
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="border border-gray-400 p-2 text-left">
-              当初出資額（設立時）
-            </td>
-            <td className="border border-gray-400 p-2 text-right">
-              5,000千円
-            </td>
-          </tr>
-          <tr>
-            <td className="border border-gray-400 p-2 text-left">
-              出資持分評価額（現在:持分あり医療法人）
-            </td>
-            <td className="border border-gray-400 p-2 text-right font-bold">
-              {result.totalEvaluationValue.toLocaleString('ja-JP')}千円
-            </td>
-          </tr>
-          <tr>
-            <td className="border border-gray-400 p-2 text-left">
-              持分なし医療法人移行時のみなし贈与税額
-            </td>
-            <td className="border border-gray-400 p-2 text-right">
-              {result.deemedGiftTax.toLocaleString('ja-JP')}千円
-            </td>
-          </tr>
-        </tbody>
-      </table>
 
-      <p className="text-sm text-gray-600 mt-2">
-        ※
-        全出資者がすべての持分を放棄した場合の、医療法人へのみなし贈与税額の試算です。
+      <div className="flex justify-between items-center mt-6 gap-4">
+        {/* 設立時 */}
+        <div className="flex-1 text-center">
+          <div className="text-lg font-bold mb-3">設立時</div>
+          <div className="mb-3">
+            <img src="/doctor.svg" alt="医療法人" className="mx-auto" width="120" height="80" />
+          </div>
+          <div className="font-bold mb-2">当初出資額</div>
+          <div className="inline-block bg-blue-100 rounded-full px-6 py-3 text-lg font-bold">
+            {result.totalCapital.toLocaleString('ja-JP')}千円
+          </div>
+        </div>
+
+        {/* 矢印1 */}
+        <div className="text-blue-500 text-4xl">→</div>
+
+        {/* 現在（持分あり医療法人） */}
+        <div className="flex-1 text-center">
+          <div className="text-lg font-bold mb-3">現在（持分あり医療法人）</div>
+          <div className="mb-3">
+            <img src="/hospital.svg" alt="医療法人" className="mx-auto" width="120" height="80" />
+          </div>
+          <div className="font-bold mb-2">出資持分評価額</div>
+          <div className="inline-block bg-blue-100 rounded-full px-6 py-3 text-lg font-bold">
+            {result.totalEvaluationValue.toLocaleString('ja-JP')}千円
+          </div>
+        </div>
+
+        {/* 矢印2 */}
+        <div className="text-blue-400 text-4xl">→</div>
+
+        {/* 移行後（持分なし医療法人） */}
+        <div className="flex-1 text-center">
+          <div className="text-lg font-bold mb-3">移行後（持分なし医療法人）</div>
+          <div className="mb-3">
+            <img src="/hospital.svg" alt="医療法人" className="mx-auto" width="120" height="80" />
+          </div>
+          <div className="font-bold mb-2">みなし贈与税額</div>
+          <div className="inline-block bg-blue-100 rounded-full px-6 py-3 text-lg font-bold">
+            {result.deemedGiftTax.toLocaleString('ja-JP')}千円
+          </div>
+        </div>
+      </div>
+
+      <p className="text-sm text-gray-600 mt-4 text-center">
+        ※全出資者がすべての持分を放棄した場合の、医療法人へのみなし贈与税額の試算です。
       </p>
 
       {/* 2. 各出資者の出資持分評価額 */}
@@ -105,6 +110,9 @@ export default function Results() {
             <th className="border border-gray-400 bg-gray-100 p-2 text-center">
               出資持分評価額
             </th>
+            <th className="border border-gray-400 bg-gray-100 p-2 text-center">
+              贈与税額
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -122,6 +130,9 @@ export default function Results() {
               <td className="border border-gray-400 p-2 text-right">
                 {investor.evaluationValue.toLocaleString('ja-JP')}千円
               </td>
+              <td className="border border-gray-400 p-2 text-right">
+                {investor.giftTax.toLocaleString('ja-JP')}千円
+              </td>
             </tr>
           ))}
         </tbody>
@@ -138,6 +149,12 @@ export default function Results() {
             <td className="border border-gray-400 p-2 text-right">
               {result.investorResults
                 .reduce((sum, inv) => sum + inv.evaluationValue, 0)
+                .toLocaleString('ja-JP')}
+              千円
+            </td>
+            <td className="border border-gray-400 p-2 text-right">
+              {result.investorResults
+                .reduce((sum, inv) => sum + inv.giftTax, 0)
                 .toLocaleString('ja-JP')}
               千円
             </td>
@@ -171,7 +188,9 @@ export default function Results() {
             <td className="border border-gray-400 p-2 text-left">
               特定の評価会社の該当判定
             </td>
-            <td className="border border-gray-400 p-2 text-right">非該当</td>
+            <td className="border border-gray-400 p-2 text-right">
+              {result.specialCompanyType}
+            </td>
           </tr>
           <tr>
             <td className="border border-gray-400 p-2 text-left">
@@ -270,14 +289,21 @@ export default function Results() {
         ※ 類似業種の株価等は、令和7年12月時点の公表データを採用しています。
       </p>
 
-      {/* 戻るボタン */}
-      <div className="text-center mt-8">
+      {/* ボタン */}
+      <div className="flex justify-center gap-4 mt-8">
         <Button
-          variant="success"
+          variant="primary"
           className="text-base px-6 py-3"
           onClick={goBack}
         >
           ← 入力画面に戻る
+        </Button>
+        <Button
+          variant="primary"
+          className="text-base px-6 py-3"
+          onClick={() => router.push('/gift-tax-table')}
+        >
+          相続税額早見表を見る →
         </Button>
       </div>
     </div>

@@ -80,6 +80,25 @@ export default function Home() {
 
   // 計算結果ページへ遷移
   const goToResults = () => {
+    // バリデーション: STEP1の必須項目チェック
+    if (!employees || !totalAssets || !sales) {
+      alert('STEP1の従業員数、総資産、売上高を選択してください。');
+      return;
+    }
+
+    // バリデーション: STEP2の必須項目チェック
+    if (!currentPeriodNetAsset || !netAssetTaxValue || !currentPeriodProfit) {
+      alert('STEP2の直前期の純資産、相続税評価額による純資産、直前期の利益を入力してください。');
+      return;
+    }
+
+    // バリデーション: STEP3の出資者情報チェック
+    const validInvestors = investors.filter((inv) => inv.name || inv.amount);
+    if (validInvestors.length === 0) {
+      alert('STEP3の出資者情報を入力してください。');
+      return;
+    }
+
     const formData = {
       employees,
       totalAssets,
@@ -90,7 +109,7 @@ export default function Home() {
       currentPeriodProfit: parseFloat(currentPeriodProfit) || 0,
       previousPeriodProfit: parseFloat(previousPeriodProfit) || 0,
       previousPreviousPeriodProfit: parseFloat(previousPreviousPeriodProfit) || 0,
-      investors: investors.filter((inv) => inv.name || inv.amount),
+      investors: validInvestors,
     };
 
     // localStorageに保存
