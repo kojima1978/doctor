@@ -30,8 +30,6 @@
                   │     fiscal_year (TEXT)          │
                   │     created_at (DATETIME)       │
                   │     updated_at (DATETIME)       │
-                  │                                 │
-                  │ UNIQUE(company_id, fiscal_year) │
                   └──────────┬──────────────────────┘
                              │
                              │ 1
@@ -71,7 +69,100 @@
                   │     updated_at       │
                   │     (DATETIME)       │
                   └──────────────────────┘
+
+                  ┌──────────────────────────────────┐
+                  │  similar_industry_data           │
+                  │  (類似業種データマスタ)          │
+                  ├──────────────────────────────────┤
+                  │ PK  id (TEXT)                    │
+                  │     fiscal_year (TEXT) UNIQUE    │
+                  │     profit_per_share (REAL)      │
+                  │     net_asset_per_share (REAL)   │
+                  │     average_stock_price (REAL)   │
+                  │     created_at (DATETIME)        │
+                  │     updated_at (DATETIME)        │
+                  └──────────────────────────────────┘
+                  ※ 独立したマスタテーブル（評価計算時に年度で参照）
 ```
+
+## テーブル詳細
+
+### 1. companies（会社マスタ）
+| カラム名 | 型 | 制約 | 説明 |
+|---------|-----|------|------|
+| id | TEXT | PRIMARY KEY | 会社ID |
+| company_name | TEXT | NOT NULL UNIQUE | 会社名 |
+| created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
+| updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+### 2. users（担当者マスタ）
+| カラム名 | 型 | 制約 | 説明 |
+|---------|-----|------|------|
+| id | TEXT | PRIMARY KEY | 担当者ID |
+| name | TEXT | NOT NULL UNIQUE | 担当者名 |
+| created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
+| updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+### 3. valuations（評価レコード）
+| カラム名 | 型 | 制約 | 説明 |
+|---------|-----|------|------|
+| id | TEXT | PRIMARY KEY | 評価ID |
+| company_id | TEXT | NOT NULL, FK → companies.id | 会社ID |
+| user_id | TEXT | NOT NULL, FK → users.id | 担当者ID |
+| fiscal_year | TEXT | NOT NULL | 事業年度 |
+| created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
+| updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+**外部キー制約**:
+- `company_id` → `companies.id` ON DELETE CASCADE
+- `user_id` → `users.id` ON DELETE CASCADE
+
+### 4. financial_data（財務データ）
+| カラム名 | 型 | 制約 | 説明 |
+|---------|-----|------|------|
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 財務データID |
+| valuation_id | TEXT | NOT NULL, FK → valuations.id | 評価ID |
+| employees | TEXT | | 従業員数 |
+| total_assets | TEXT | | 総資産 |
+| sales | TEXT | | 売上高 |
+| current_period_net_asset | REAL | | 当期純資産 |
+| previous_period_net_asset | REAL | | 前期純資産 |
+| net_asset_tax_value | REAL | | 純資産税務価額 |
+| current_period_profit | REAL | | 当期利益 |
+| previous_period_profit | REAL | | 前期利益 |
+| previous_previous_period_profit | REAL | | 前々期利益 |
+| created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
+| updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+**外部キー制約**:
+- `valuation_id` → `valuations.id` ON DELETE CASCADE
+
+### 5. investors（投資家）
+| カラム名 | 型 | 制約 | 説明 |
+|---------|-----|------|------|
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 投資家ID |
+| valuation_id | TEXT | NOT NULL, FK → valuations.id | 評価ID |
+| investor_name | TEXT | NOT NULL | 投資家名 |
+| shares_held | INTEGER | | 保有株数 |
+| shareholding_ratio | REAL | | 持株比率 |
+| created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
+| updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+**外部キー制約**:
+- `valuation_id` → `valuations.id` ON DELETE CASCADE
+
+### 6. similar_industry_data（類似業種データマスタ）
+| カラム名 | 型 | 制約 | 説明 |
+|---------|-----|------|------|
+| id | TEXT | PRIMARY KEY | データID |
+| fiscal_year | TEXT | NOT NULL UNIQUE | 年度（例: "2024"） |
+| profit_per_share | REAL | NOT NULL DEFAULT 51 | 1口あたり利益 |
+| net_asset_per_share | REAL | NOT NULL DEFAULT 395 | 1口あたり純資産 |
+| average_stock_price | REAL | NOT NULL DEFAULT 532 | 平均株価 |
+| created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
+| updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+**用途**: 評価額計算時に年度に応じた類似業種の株価データを参照
 
 ## リレーションシップの詳細
 
@@ -81,7 +172,6 @@
 - **外部キー**: `valuations.company_id` → `companies.id`
 - **カーディナリティ**: 1:N
 - **制約**: `ON DELETE CASCADE`（会社を削除すると関連する全評価も削除）
-- **UNIQUE制約**: 同じ会社の同じ年度の評価は1つのみ（company_id, fiscal_year）
 
 **例**:
 ```
@@ -139,15 +229,23 @@
   └─ 投資家C（保有株数: 300株、持株比率: 9%）
 ```
 
+### 5. similar_industry_data（独立マスタテーブル）
+
+- **関係**: 他のテーブルとの外部キー関係はなし
+- **用途**: 評価額計算時に年度（fiscal_year）をキーとして参照
+- **データ例**: 令和6年度（2024年度）の医療業界の標準的な株価データ
+
 ## データフロー例
 
 ### 新規評価データ作成時
 
 ```
 1. companies テーブルに会社が存在しない場合 → 新規作成
-2. valuations テーブルに評価レコードを作成
-3. financial_data テーブルに財務データを作成
-4. investors テーブルに投資家データを複数作成
+2. users テーブルに担当者が存在しない場合 → 新規作成
+3. valuations テーブルに評価レコードを作成
+4. financial_data テーブルに財務データを作成
+5. investors テーブルに投資家データを複数作成
+6. 計算時に similar_industry_data から年度に対応するデータを取得
 ```
 
 ### 評価データ削除時（カスケード削除）
@@ -160,6 +258,8 @@
 3. investors テーブルから関連する投資家データが自動削除
 
 ※ companies テーブルの会社データは残る（他の評価で使用される可能性があるため）
+※ users テーブルの担当者データは残る（他の評価で使用される可能性があるため）
+※ similar_industry_data はマスタデータなので削除されない
 ```
 
 ## インデックス
@@ -167,8 +267,10 @@
 パフォーマンス最適化のため、以下のインデックスが作成されています:
 
 1. `idx_valuations_company_id` - valuations.company_id（JOIN高速化）
-2. `idx_financial_data_valuation_id` - financial_data.valuation_id（JOIN高速化）
-3. `idx_investors_valuation_id` - investors.valuation_id（JOIN高速化）
+2. `idx_valuations_user_id` - valuations.user_id（JOIN高速化）
+3. `idx_financial_data_valuation_id` - financial_data.valuation_id（JOIN高速化）
+4. `idx_investors_valuation_id` - investors.valuation_id（JOIN高速化）
+5. `idx_similar_industry_fiscal_year` - similar_industry_data.fiscal_year（年度検索高速化）
 
 ## 正規化レベル
 
@@ -235,6 +337,16 @@ erDiagram
         DATETIME created_at
         DATETIME updated_at
     }
+
+    similar_industry_data {
+        TEXT id PK
+        TEXT fiscal_year UK
+        REAL profit_per_share
+        REAL net_asset_per_share
+        REAL average_stock_price
+        DATETIME created_at
+        DATETIME updated_at
+    }
 ```
 
 ## SQL JOIN例
@@ -246,8 +358,8 @@ erDiagram
 SELECT
   v.id,
   v.fiscal_year,
-  v.person_in_charge,
   c.company_name,
+  u.name as person_in_charge,
   f.employees,
   f.total_assets,
   f.sales,
@@ -261,6 +373,7 @@ SELECT
   v.updated_at
 FROM valuations v
 JOIN companies c ON v.company_id = c.id
+JOIN users u ON v.user_id = u.id
 LEFT JOIN financial_data f ON v.id = f.valuation_id
 WHERE v.id = ?;
 
@@ -271,6 +384,14 @@ SELECT
   shareholding_ratio
 FROM investors
 WHERE valuation_id = ?;
+
+-- 類似業種データを取得
+SELECT
+  profit_per_share,
+  net_asset_per_share,
+  average_stock_price
+FROM similar_industry_data
+WHERE fiscal_year = ?;
 ```
 
 ### 会社別の評価履歴を取得
@@ -279,12 +400,28 @@ WHERE valuation_id = ?;
 SELECT
   c.company_name,
   v.fiscal_year,
+  u.name as person_in_charge,
   f.current_period_profit,
   COUNT(i.id) as investor_count
 FROM companies c
 JOIN valuations v ON c.id = v.company_id
+JOIN users u ON v.user_id = u.id
 LEFT JOIN financial_data f ON v.id = f.valuation_id
 LEFT JOIN investors i ON v.id = i.valuation_id
 GROUP BY c.id, v.id
 ORDER BY c.company_name, v.fiscal_year DESC;
+```
+
+### 担当者別の評価件数を取得
+
+```sql
+SELECT
+  u.name as person_in_charge,
+  COUNT(v.id) as valuation_count,
+  MIN(v.created_at) as first_valuation,
+  MAX(v.created_at) as latest_valuation
+FROM users u
+LEFT JOIN valuations v ON u.id = v.user_id
+GROUP BY u.id
+ORDER BY valuation_count DESC;
 ```
