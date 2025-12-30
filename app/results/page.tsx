@@ -166,7 +166,7 @@ export default function Results() {
               <tr key={index}>
                 <td className="text-center">{index + 1}</td>
                 <td className="text-left">{investor.name || ''}</td>
-                <td className="text-right">{(investor.amount || 0).toLocaleString('ja-JP')}円</td>
+                <td className="text-right">{Math.round((investor.amount || 0) / 1000).toLocaleString('ja-JP')}千円</td>
                 <td className="text-right">{(investor.evaluationValue || 0).toLocaleString('ja-JP')}千円</td>
                 <td className="text-right">{(investor.giftTax || 0).toLocaleString('ja-JP')}千円</td>
               </tr>
@@ -177,7 +177,7 @@ export default function Results() {
               <td className="text-center">合計</td>
               <td></td>
               <td className="text-right">
-                {formData.investors.reduce((sum, inv) => sum + (inv.amount || 0), 0).toLocaleString('ja-JP')}円
+                {Math.round(formData.investors.reduce((sum, inv) => sum + (inv.amount || 0), 0) / 1000).toLocaleString('ja-JP')}千円
               </td>
               <td className="text-right">
                 {result.investorResults.reduce((sum, inv) => sum + (inv.evaluationValue || 0), 0).toLocaleString('ja-JP')}千円

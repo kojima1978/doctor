@@ -5,7 +5,7 @@ import { createRecord, updateRecord } from '@/lib/api-utils';
 export async function GET() {
   try {
     const db = getDatabase();
-    const users = db.prepare('SELECT id, name FROM users ORDER BY name').all();
+    const users = db.prepare('SELECT id, name, created_at, updated_at FROM users ORDER BY name').all();
     return NextResponse.json(users);
   } catch (error) {
     console.error('データベースエラー:', error);
@@ -62,6 +62,32 @@ export async function PUT(request: NextRequest) {
     console.error('データベースエラー:', error);
     return NextResponse.json(
       { error: '担当者情報の更新に失敗しました' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'IDを指定してください' },
+        { status: 400 }
+      );
+    }
+
+    const db = getDatabase();
+    const stmt = db.prepare('DELETE FROM users WHERE id = ?');
+    stmt.run(id);
+
+    return NextResponse.json({ message: '担当者を削除しました' });
+  } catch (error) {
+    console.error('データベースエラー:', error);
+    return NextResponse.json(
+      { error: '担当者の削除に失敗しました' },
       { status: 500 }
     );
   }
