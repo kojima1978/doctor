@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NumericFormat } from 'react-number-format';
 import { ListChecks, Copy } from 'lucide-react';
+import { inlineButtonStyle } from '@/lib/button-styles';
 
 type Props = {
     currentPeriodNetAsset: string;
@@ -35,22 +36,7 @@ export default function Step2FinancialData({
 }: Props) {
     const [showPopup1, setShowPopup1] = useState(false);
     const [showPopup2, setShowPopup2] = useState(false);
-
-    // 共通ボタンスタイル
-    const smallButtonStyle = {
-        whiteSpace: 'nowrap' as const,
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '4px',
-        backgroundColor: 'white',
-        color: 'black',
-        border: '1px solid #d1d5db',
-        transition: 'all 0.2s ease',
-        fontSize: '0.75rem',
-        padding: '0.25rem 0.5rem',
-        marginLeft: '0.5rem'
-    };
-
+    const smallButtonStyle = inlineButtonStyle;
     const buttonHoverClass = 'hover:bg-gray-200 hover:border-gray-400';
 
     return (

@@ -11,28 +11,11 @@ import Step2FinancialData from '@/components/valuation/Step2FinancialData';
 import Step3Investors from '@/components/valuation/Step3Investors';
 import { useSaveValuation } from '@/hooks/useSaveValuation';
 import { validateBasicInfo } from '@/lib/utils';
+import { buttonStyle, buttonHoverClass } from '@/lib/button-styles';
 
 export default function Home() {
   const router = useRouter();
   const { saveValuation, isSaving } = useSaveValuation();
-
-  // 共通ボタンスタイル
-  const buttonStyle = {
-    whiteSpace: 'nowrap' as const,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: 'white',
-    color: 'black',
-    border: '1px solid #d1d5db',
-    transition: 'all 0.2s ease',
-    padding: '0.5rem 1rem',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-    fontWeight: '500'
-  };
-
-  const buttonHoverClass = 'hover:bg-gray-200 hover:border-gray-400 cursor-pointer';
 
   const [fiscalYear, setFiscalYear] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -91,6 +74,10 @@ export default function Home() {
     const newInvestors = [...investors];
     newInvestors[index] = { ...newInvestors[index], [field]: value };
     setInvestors(newInvestors);
+  };
+
+  const reorderInvestors = (newOrder: Investor[]) => {
+    setInvestors(newOrder);
   };
 
   const totalInvestment = investors.reduce((sum, inv) => sum + (inv.amount || 0), 0);
@@ -252,6 +239,7 @@ export default function Home() {
         updateInvestor={updateInvestor}
         addInvestorRow={addInvestorRow}
         removeInvestorRow={removeInvestorRow}
+        reorderInvestors={reorderInvestors}
         totalInvestment={totalInvestment}
       />
 

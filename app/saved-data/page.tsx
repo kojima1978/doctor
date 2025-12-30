@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Upload, Trash2, X, ArrowLeft } from 'lucide-react';
 import Header from '@/components/Header';
 import { toWareki } from '@/lib/date-utils';
+import { buttonStyle, smallButtonStyle, btnHoverClass } from '@/lib/button-styles';
 
 type SavedValuation = {
   id: string;
@@ -38,26 +39,7 @@ export default function SavedDataPage() {
   const [filterYear, setFilterYear] = useState('');
   const [filterCompanyName, setFilterCompanyName] = useState('');
   const [filterPersonInCharge, setFilterPersonInCharge] = useState('');
-
-  // 共通ボタンスタイル
-  const buttonStyle = {
-    whiteSpace: 'nowrap' as const,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: 'white',
-    color: 'black',
-    border: '1px solid #d1d5db',
-    transition: 'all 0.2s ease'
-  };
-
-  const smallButtonStyle = {
-    ...buttonStyle,
-    fontSize: '0.875rem',
-    padding: '0.5rem 1rem'
-  };
-
-  const buttonHoverClass = 'btn hover:bg-gray-200 hover:border-gray-400';
+  const buttonHoverClass = btnHoverClass;
 
   useEffect(() => {
     loadData();

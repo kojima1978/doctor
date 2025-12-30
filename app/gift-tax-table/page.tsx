@@ -2,27 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { buttonStyle, buttonHoverClass } from '@/lib/button-styles';
 
 export default function GiftTaxTable() {
   const router = useRouter();
-
-  // 共通ボタンスタイル
-  const buttonStyle = {
-    whiteSpace: 'nowrap' as const,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: 'white',
-    color: 'black',
-    border: '1px solid #d1d5db',
-    transition: 'all 0.2s ease',
-    padding: '0.5rem 1rem',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-    fontWeight: '500'
-  };
-
-  const buttonHoverClass = 'hover:bg-gray-200 hover:border-gray-400 cursor-pointer';
 
   const goBack = () => {
     router.back();

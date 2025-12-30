@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, Edit2, Trash2, Save, X } from 'lucide-react';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import { toWareki } from '@/lib/date-utils';
+import { buttonStyle, smallButtonStyle, btnHoverClass } from '@/lib/button-styles';
 
 type SimilarIndustryData = {
   id: string;
@@ -28,26 +29,7 @@ export default function SimilarIndustrySettingsPage() {
   const [profitPerShare, setProfitPerShare] = useState('51');
   const [netAssetPerShare, setNetAssetPerShare] = useState('395');
   const [averageStockPrice, setAverageStockPrice] = useState('532');
-
-  // 共通ボタンスタイル
-  const buttonStyle = {
-    whiteSpace: 'nowrap' as const,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: 'white',
-    color: 'black',
-    border: '1px solid #d1d5db',
-    transition: 'all 0.2s ease'
-  };
-
-  const smallButtonStyle = {
-    ...buttonStyle,
-    fontSize: '0.875rem',
-    padding: '0.5rem 1rem'
-  };
-
-  const buttonHoverClass = 'btn hover:bg-gray-200 hover:border-gray-400';
+  const buttonHoverClass = btnHoverClass;
 
   useEffect(() => {
     loadData();
@@ -59,7 +41,11 @@ export default function SimilarIndustrySettingsPage() {
       const response = await fetch('/api/similar-industry');
       if (response.ok) {
         const result = await response.json();
-        setData(result);
+        // 年度の降順（新しい年度が上）にソート
+        const sortedData = result.sort((a: SimilarIndustryData, b: SimilarIndustryData) => {
+          return parseInt(b.fiscal_year) - parseInt(a.fiscal_year);
+        });
+        setData(sortedData);
       }
     } catch (error) {
       console.error('読み込みエラー:', error);

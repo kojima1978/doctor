@@ -8,30 +8,13 @@ import { calculateEvaluation } from '@/lib/calculations';
 import { useSaveValuation } from '@/hooks/useSaveValuation';
 import { validateBasicInfo } from '@/lib/utils';
 import { toWareki } from '@/lib/date-utils';
+import { buttonStyle, buttonHoverClass } from '@/lib/button-styles';
 
 export default function Results() {
   const router = useRouter();
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
   const { saveValuation, isSaving } = useSaveValuation();
-
-  // 共通ボタンスタイル
-  const buttonStyle = {
-    whiteSpace: 'nowrap' as const,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: 'white',
-    color: 'black',
-    border: '1px solid #d1d5db',
-    transition: 'all 0.2s ease',
-    padding: '0.5rem 1rem',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-    fontWeight: '500'
-  };
-
-  const buttonHoverClass = 'hover:bg-gray-200 hover:border-gray-400 cursor-pointer';
 
   useEffect(() => {
     const loadDataAndCalculate = async () => {
@@ -152,7 +135,7 @@ export default function Results() {
           <div className="flex-1 text-center">
             <div className="text-lg font-bold mb-3">移行後（持分なし医療法人）</div>
             <div className="mb-3">
-              <img src="/hospital.svg" alt="医療法人" className="mx-auto" width="120" height="80" />
+              <img src="/hospital2.svg" alt="医療法人" className="mx-auto" width="120" height="80" />
             </div>
             <div className="font-bold mb-2">みなし贈与税額</div>
             <div className="inline-block bg-blue-100 rounded-full px-6 py-3 text-lg font-bold">
