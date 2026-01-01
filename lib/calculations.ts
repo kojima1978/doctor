@@ -1,4 +1,21 @@
 import { FormData, CalculationResult } from './types';
+import {
+  SHARE_DENOMINATION,
+  CORPORATE_TAX_RATE,
+  GIFT_TAX_BASIC_DEDUCTION,
+  GIFT_TAX_BRACKETS,
+  LARGE_COMPANY_MULTIPLIER,
+  MEDIUM_COMPANY_MULTIPLIER,
+  SMALL_COMPANY_MULTIPLIER,
+  LARGE_COMPANY_L_RATIO,
+  LARGE_MEDIUM_COMPANY_L_RATIO,
+  MEDIUM_MEDIUM_COMPANY_L_RATIO,
+  SMALL_MEDIUM_COMPANY_L_RATIO,
+  SMALL_COMPANY_L_RATIO,
+  YEN_TO_THOUSAND,
+  YEN_TO_TEN_THOUSAND,
+  THOUSAND_TO_TEN_THOUSAND,
+} from './constants';
 
 export type CompanySize = 'Big' | 'Medium' | 'Small';
 
@@ -49,8 +66,8 @@ export function determineCompanySize(
     return {
       size: 'Big',
       sizeLabel: '大会社',
-      sizeMultiplier: 0.7,
-      lRatio: 1.0,
+      sizeMultiplier: LARGE_COMPANY_MULTIPLIER,
+      lRatio: LARGE_COMPANY_L_RATIO,
     };
   }
   if (assetsNum === 5 && empNum > 3) {
@@ -58,8 +75,8 @@ export function determineCompanySize(
     return {
       size: 'Big',
       sizeLabel: '大会社',
-      sizeMultiplier: 0.7,
-      lRatio: 1.0,
+      sizeMultiplier: LARGE_COMPANY_MULTIPLIER,
+      lRatio: LARGE_COMPANY_L_RATIO,
     };
   }
   if (salesNum === 5) {
@@ -67,8 +84,8 @@ export function determineCompanySize(
     return {
       size: 'Big',
       sizeLabel: '大会社',
-      sizeMultiplier: 0.7,
-      lRatio: 1.0,
+      sizeMultiplier: LARGE_COMPANY_MULTIPLIER,
+      lRatio: LARGE_COMPANY_L_RATIO,
     };
   }
 
@@ -78,8 +95,8 @@ export function determineCompanySize(
     return {
       size: 'Small',
       sizeLabel: '小会社',
-      sizeMultiplier: 0.5,
-      lRatio: 0.5,
+      sizeMultiplier: SMALL_COMPANY_MULTIPLIER,
+      lRatio: SMALL_COMPANY_L_RATIO,
     };
   }
   if (empNum === 1) {
@@ -87,8 +104,8 @@ export function determineCompanySize(
     return {
       size: 'Small',
       sizeLabel: '小会社',
-      sizeMultiplier: 0.5,
-      lRatio: 0.5,
+      sizeMultiplier: SMALL_COMPANY_MULTIPLIER,
+      lRatio: SMALL_COMPANY_L_RATIO,
     };
   }
   if (salesNum === 1) {
@@ -96,8 +113,8 @@ export function determineCompanySize(
     return {
       size: 'Small',
       sizeLabel: '小会社',
-      sizeMultiplier: 0.5,
-      lRatio: 0.5,
+      sizeMultiplier: SMALL_COMPANY_MULTIPLIER,
+      lRatio: SMALL_COMPANY_L_RATIO,
     };
   }
 
@@ -109,40 +126,40 @@ export function determineCompanySize(
   // 資産によるL値判定（小売・サービス業/医療法人基準）
   if (assetsNum === 4 && empNum > 3) {
     // 5億円以上（従業員35人以下除く）
-    lAssets = 0.9;
+    lAssets = LARGE_MEDIUM_COMPANY_L_RATIO;
   } else if (assetsNum === 3 && empNum > 2) {
     // 2.5億円以上（従業員20人以下除く）
-    lAssets = 0.75;
+    lAssets = MEDIUM_MEDIUM_COMPANY_L_RATIO;
   } else if (assetsNum >= 2 && empNum > 1) {
     // 4,000万円以上（従業員5人以下除く）
-    lAssets = 0.6;
+    lAssets = SMALL_MEDIUM_COMPANY_L_RATIO;
   }
 
   // 売上によるL値判定（小売・サービス業/医療法人基準）
   if (salesNum === 4) {
     // 5億円以上20億円未満
-    lSales = 0.9;
+    lSales = LARGE_MEDIUM_COMPANY_L_RATIO;
   } else if (salesNum === 3) {
     // 2.5億円以上5億円未満
-    lSales = 0.75;
+    lSales = MEDIUM_MEDIUM_COMPANY_L_RATIO;
   } else if (salesNum === 2) {
     // 6,000万円以上2.5億円未満
-    lSales = 0.6;
+    lSales = SMALL_MEDIUM_COMPANY_L_RATIO;
   }
 
   // 最大のL値を選択
   const lRatio = Math.max(lAssets, lSales) as 0.9 | 0.75 | 0.6;
 
   let sizeLabel = '中会社';
-  if (lRatio === 0.9) sizeLabel = '中会社の大';
-  else if (lRatio === 0.75) sizeLabel = '中会社の中';
-  else if (lRatio === 0.6) sizeLabel = '中会社の小';
+  if (lRatio === LARGE_MEDIUM_COMPANY_L_RATIO) sizeLabel = '中会社の大';
+  else if (lRatio === MEDIUM_MEDIUM_COMPANY_L_RATIO) sizeLabel = '中会社の中';
+  else if (lRatio === SMALL_MEDIUM_COMPANY_L_RATIO) sizeLabel = '中会社の小';
 
   return {
     size: 'Medium',
     sizeLabel,
-    sizeMultiplier: 0.6,
-    lRatio: lRatio || 0.6,
+    sizeMultiplier: MEDIUM_COMPANY_MULTIPLIER,
+    lRatio: lRatio || SMALL_MEDIUM_COMPANY_L_RATIO,
   };
 }
 
@@ -199,19 +216,10 @@ function calculateSimilarIndustryValue(
   // d2の計算: 直前々期の純資産（円単位）
   const d2 = calculatePerShareValue(formData.previousPeriodNetAsset, totalShares);
 
-  // デバッグ用ログ
-  console.log('比準要素判定:', {
-    currentPeriodProfit: formData.currentPeriodProfit,
-    currentPeriodNetAsset: formData.currentPeriodNetAsset,
-    c1, d1, c2, d2,
-    totalShares
-  });
-
   // 比準要素数0の会社判定
   if (c1 === 0 && d1 === 0) {
     // 比準要素数0の会社は類似業種比準価額を使用できない
     // 純資産価額方式のみとなるため、類似業種比準価額は0を返す
-    console.warn('比準要素数0の会社と判定されました');
     return { value: 0, specialCompanyType: '比準0（比準要素数0の会社）' };
   }
 
@@ -254,8 +262,8 @@ function calculateNetAssetValue(
   // 評価差額
   const evalDiff = netAssetInheritance - netAssetBook;
 
-  // 法人税等相当額（37%）
-  const tax = evalDiff > 0 ? evalDiff * 0.37 : 0;
+  // 法人税等相当額
+  const tax = evalDiff > 0 ? evalDiff * CORPORATE_TAX_RATE : 0;
 
   // 純資産価額（調整後）
   const netAssetAdjusted = netAssetInheritance - tax;
@@ -325,9 +333,9 @@ export function calculateEvaluation(formData: FormData): CalculationResult {
   );
 
   // 総出資口数を計算（1口50円と仮定）
-  const totalShares = totalInvestment > 0 ? totalInvestment / 50 : 0;
+  const totalShares = totalInvestment > 0 ? totalInvestment / SHARE_DENOMINATION : 0;
 
-  // 類似業種比準価額（50円あたり）
+  // 類似業種比準価額（1口あたり）
   const similarIndustryResult = calculateSimilarIndustryValue(
     formData,
     companySizeResult.sizeMultiplier,
@@ -351,51 +359,39 @@ export function calculateEvaluation(formData: FormData): CalculationResult {
   const perShareValue = finalResult.value;
 
   // 出資持分評価額総額（千円単位）
-  const totalEvaluationValue = Math.round((totalShares * perShareValue) / 1000);
+  const totalEvaluationValue = Math.round((totalShares * perShareValue) / YEN_TO_THOUSAND);
 
   // 贈与税を計算する関数（円単位で受け取り、千円単位で返す）
   const calculateGiftTax = (evaluationValueYen: number): number => {
     // 円単位から万円単位に変換
-    const evaluationValueManYen = evaluationValueYen / 10000;
+    const evaluationValueManYen = evaluationValueYen / YEN_TO_TEN_THOUSAND;
 
     // 基礎控除後の課税価格（万円単位）
-    const taxableAmount = evaluationValueManYen - 110; // 基礎控除110万円
+    const taxableAmount = evaluationValueManYen - GIFT_TAX_BASIC_DEDUCTION;
 
     if (taxableAmount <= 0) {
       return 0; // 基礎控除以下の場合は税額0
     }
 
+    // 贈与税の速算表を使用して税額を計算
     let taxManYen = 0;
-
-    // 贈与税の速算表（一般税率）を適用
-    if (taxableAmount <= 200) {
-      taxManYen = taxableAmount * 0.1;
-    } else if (taxableAmount <= 300) {
-      taxManYen = taxableAmount * 0.15 - 10;
-    } else if (taxableAmount <= 400) {
-      taxManYen = taxableAmount * 0.2 - 25;
-    } else if (taxableAmount <= 600) {
-      taxManYen = taxableAmount * 0.3 - 65;
-    } else if (taxableAmount <= 1000) {
-      taxManYen = taxableAmount * 0.4 - 125;
-    } else if (taxableAmount <= 1500) {
-      taxManYen = taxableAmount * 0.45 - 175;
-    } else if (taxableAmount <= 3000) {
-      taxManYen = taxableAmount * 0.5 - 250;
-    } else {
-      taxManYen = taxableAmount * 0.55 - 400;
+    for (const bracket of GIFT_TAX_BRACKETS) {
+      if (taxableAmount <= bracket.threshold) {
+        taxManYen = taxableAmount * bracket.rate - bracket.deduction;
+        break;
+      }
     }
 
     // 万円単位から千円単位に変換して返す
-    return Math.round(taxManYen * 10);
+    return Math.round(taxManYen * THOUSAND_TO_TEN_THOUSAND);
   };
 
   // 各出資者の評価額と贈与税を計算
   const investorResults = formData.investors.map((investor) => {
     const amount = investor.amount || 0;
-    const shares = amount / 50;
+    const shares = amount / SHARE_DENOMINATION;
     const evaluationValueYen = shares * perShareValue; // 円単位
-    const evaluationValue = Math.round(evaluationValueYen / 1000); // 千円単位（表示用）
+    const evaluationValue = Math.round(evaluationValueYen / YEN_TO_THOUSAND); // 千円単位（表示用）
     const giftTax = calculateGiftTax(evaluationValueYen); // 円単位で渡す
     return {
       name: investor.name || '',

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { withErrorHandler } from '@/lib/api-utils';
+import type { Company, User, FinancialData, Investor as DBInvestor, ValuationWithRelations } from '@/lib/db-types';
 
 export async function POST(request: NextRequest) {
   return withErrorHandler(async () => {
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
     // トランザクション開始
     const transaction = db.transaction(() => {
       // 1. 会社の存在確認または作成
-      let company = db.prepare('SELECT id FROM companies WHERE company_name = ?').get(companyName) as { id: number } | undefined;
+      const company = db.prepare('SELECT id FROM companies WHERE company_name = ?').get(companyName) as Pick<Company, 'id'> | undefined;
 
       let companyId: number;
       if (!company) {
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 2. 担当者の存在確認または作成
-      let user = db.prepare('SELECT id FROM users WHERE name = ?').get(personInCharge) as { id: number } | undefined;
+      const user = db.prepare('SELECT id FROM users WHERE name = ?').get(personInCharge) as Pick<User, 'id'> | undefined;
 
       let userId: number;
       if (!user) {
@@ -202,7 +203,7 @@ export async function GET(request: NextRequest) {
         JOIN companies c ON v.company_id = c.id
         JOIN users u ON v.user_id = u.id
         WHERE v.id = ?
-      `).get(id) as any;
+      `).get(id) as ValuationWithRelations | undefined;
 
       if (!valuation) {
         return NextResponse.json(
@@ -225,7 +226,7 @@ export async function GET(request: NextRequest) {
           previous_previous_period_profit
         FROM financial_data
         WHERE valuation_id = ?
-      `).get(id) as any;
+      `).get(id) as Omit<FinancialData, 'id' | 'valuation_id' | 'created_at' | 'updated_at'> | undefined;
 
       // 投資家データを取得
       const investors = db.prepare(`
@@ -235,7 +236,7 @@ export async function GET(request: NextRequest) {
           shareholding_ratio
         FROM investors
         WHERE valuation_id = ?
-      `).all(id);
+      `).all(id) as Pick<DBInvestor, 'investor_name' | 'shares_held' | 'shareholding_ratio'>[];
 
       const result = {
         id: valuation.id,
@@ -251,7 +252,7 @@ export async function GET(request: NextRequest) {
         currentPeriodProfit: financialData?.current_period_profit || 0,
         previousPeriodProfit: financialData?.previous_period_profit || 0,
         previousPreviousPeriodProfit: financialData?.previous_previous_period_profit || 0,
-        investors: investors.map((inv: any) => ({
+        investors: investors.map((inv) => ({
           name: inv.investor_name,
           amount: inv.shares_held,
         })),
@@ -274,9 +275,9 @@ export async function GET(request: NextRequest) {
         JOIN companies c ON v.company_id = c.id
         JOIN users u ON v.user_id = u.id
         ORDER BY v.updated_at DESC
-      `).all();
+      `).all() as ValuationWithRelations[];
 
-      const results = valuations.map((valuation: any) => {
+      const results = valuations.map((valuation) => {
         // 各評価の財務データを取得
         const financialData = db.prepare(`
           SELECT
@@ -291,7 +292,7 @@ export async function GET(request: NextRequest) {
             previous_previous_period_profit
           FROM financial_data
           WHERE valuation_id = ?
-        `).get(valuation.id) as any;
+        `).get(valuation.id) as Omit<FinancialData, 'id' | 'valuation_id' | 'created_at' | 'updated_at'> | undefined;
 
         // 各評価の投資家データを取得
         const investors = db.prepare(`
@@ -301,7 +302,7 @@ export async function GET(request: NextRequest) {
             shareholding_ratio
           FROM investors
           WHERE valuation_id = ?
-        `).all(valuation.id);
+        `).all(valuation.id) as Pick<DBInvestor, 'investor_name' | 'shares_held' | 'shareholding_ratio'>[];
 
         return {
           id: valuation.id,
@@ -317,7 +318,7 @@ export async function GET(request: NextRequest) {
           currentPeriodProfit: financialData?.current_period_profit || 0,
           previousPeriodProfit: financialData?.previous_period_profit || 0,
           previousPreviousPeriodProfit: financialData?.previous_previous_period_profit || 0,
-          investors: investors.map((inv: any) => ({
+          investors: investors.map((inv) => ({
             name: inv.investor_name,
             amount: inv.shares_held,
           })),

@@ -24,7 +24,6 @@ export default function Results() {
       const savedData = localStorage.getItem('formData');
       if (savedData) {
         const data: FormData = JSON.parse(savedData);
-        console.log('FormData loaded:', data);
 
         // 年度から類似業種データを取得
         if (data.fiscalYear) {
@@ -33,7 +32,6 @@ export default function Results() {
             if (response.ok) {
               const similarData = await response.json();
               data.similarIndustryData = similarData;
-              console.log('Similar industry data loaded:', similarData);
             }
           } catch (error) {
             console.error('類似業種データの取得に失敗:', error);
@@ -46,7 +44,6 @@ export default function Results() {
         // 評価額を計算
         try {
           const calculatedResult = calculateEvaluation(data);
-          console.log('Calculation result:', calculatedResult);
           setResult(calculatedResult);
         } catch (error) {
           console.error('Calculation error:', error);
