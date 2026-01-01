@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { generateId } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -79,11 +78,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 新規作成
-    const id = generateId('sim', 9);
     db.prepare(`
-      INSERT INTO similar_industry_data (id, fiscal_year, profit_per_share, net_asset_per_share, average_stock_price)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(id, fiscal_year, profit_per_share, net_asset_per_share, average_stock_price);
+      INSERT INTO similar_industry_data (fiscal_year, profit_per_share, net_asset_per_share, average_stock_price)
+      VALUES (?, ?, ?, ?)
+    `).run(fiscal_year, profit_per_share, net_asset_per_share, average_stock_price);
 
     return NextResponse.json({
       success: true,

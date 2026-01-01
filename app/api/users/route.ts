@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
       tableName: 'users',
       nameField: 'name',
       data: { name },
-      idPrefix: 'user',
     });
   } catch (error) {
     console.error('データベースエラー:', error);

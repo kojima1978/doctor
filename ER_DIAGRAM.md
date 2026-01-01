@@ -7,7 +7,7 @@
 │         companies               │       │           users                 │
 │  (会社マスタ)                    │       │  (担当者マスタ)                  │
 ├─────────────────────────────────┤       ├─────────────────────────────────┤
-│ PK  id (TEXT)                   │       │ PK  id (TEXT)                   │
+│ PK  id (INTEGER)                │       │ PK  id (INTEGER)                │
 │     company_name (TEXT) UNIQUE  │       │     name (TEXT) UNIQUE          │
 │     created_at (DATETIME)       │       │     created_at (DATETIME)       │
 │     updated_at (DATETIME)       │       │     updated_at (DATETIME)       │
@@ -24,9 +24,9 @@
                   │         valuations              │
                   │  (評価レコード)                  │
                   ├─────────────────────────────────┤
-                  │ PK  id (TEXT)                   │
-                  │ FK  company_id (TEXT)           │
-                  │ FK  user_id (TEXT)              │
+                  │ PK  id (INTEGER)                │
+                  │ FK  company_id (INTEGER)        │
+                  │ FK  user_id (INTEGER)           │
                   │     fiscal_year (TEXT)          │
                   │     created_at (DATETIME)       │
                   │     updated_at (DATETIME)       │
@@ -45,8 +45,8 @@
                   │  (財務データ)        │  │  (投資家)                │
                   ├──────────────────────┤  ├──────────────────────────┤
                   │ PK  id (INTEGER)     │  │ PK  id (INTEGER)         │
-                  │ FK  valuation_id     │  │ FK  valuation_id (TEXT)  │
-                  │     (TEXT)           │  │     investor_name (TEXT) │
+                  │ FK  valuation_id     │  │ FK  valuation_id         │
+                  │     (INTEGER)        │  │     (INTEGER)            │
                   │     employees (TEXT) │  │     shares_held (INT)    │
                   │     total_assets     │  │     shareholding_ratio   │
                   │     (TEXT)           │  │     (REAL)               │
@@ -74,7 +74,7 @@
                   │  similar_industry_data           │
                   │  (類似業種データマスタ)          │
                   ├──────────────────────────────────┤
-                  │ PK  id (TEXT)                    │
+                  │ PK  id (INTEGER)                 │
                   │     fiscal_year (TEXT) UNIQUE    │
                   │     profit_per_share (REAL)      │
                   │     net_asset_per_share (REAL)   │
@@ -90,7 +90,7 @@
 ### 1. companies（会社マスタ）
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
-| id | TEXT | PRIMARY KEY | 会社ID |
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 会社ID |
 | company_name | TEXT | NOT NULL UNIQUE | 会社名 |
 | created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
 | updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
@@ -98,7 +98,7 @@
 ### 2. users（担当者マスタ）
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
-| id | TEXT | PRIMARY KEY | 担当者ID |
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 担当者ID |
 | name | TEXT | NOT NULL UNIQUE | 担当者名 |
 | created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
 | updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
@@ -106,9 +106,9 @@
 ### 3. valuations（評価レコード）
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
-| id | TEXT | PRIMARY KEY | 評価ID |
-| company_id | TEXT | NOT NULL, FK → companies.id | 会社ID |
-| user_id | TEXT | NOT NULL, FK → users.id | 担当者ID |
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 評価ID |
+| company_id | INTEGER | NOT NULL, FK → companies.id | 会社ID |
+| user_id | INTEGER | NOT NULL, FK → users.id | 担当者ID |
 | fiscal_year | TEXT | NOT NULL | 事業年度 |
 | created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
 | updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
@@ -121,7 +121,7 @@
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 財務データID |
-| valuation_id | TEXT | NOT NULL, FK → valuations.id | 評価ID |
+| valuation_id | INTEGER | NOT NULL, FK → valuations.id | 評価ID |
 | employees | TEXT | | 従業員数 |
 | total_assets | TEXT | | 総資産 |
 | sales | TEXT | | 売上高 |
@@ -141,7 +141,7 @@
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 投資家ID |
-| valuation_id | TEXT | NOT NULL, FK → valuations.id | 評価ID |
+| valuation_id | INTEGER | NOT NULL, FK → valuations.id | 評価ID |
 | investor_name | TEXT | NOT NULL | 投資家名 |
 | shares_held | INTEGER | | 保有株数 |
 | shareholding_ratio | REAL | | 持株比率 |
@@ -154,7 +154,7 @@
 ### 6. similar_industry_data（類似業種データマスタ）
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
-| id | TEXT | PRIMARY KEY | データID |
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | データID |
 | fiscal_year | TEXT | NOT NULL UNIQUE | 年度（例: "2024"） |
 | profit_per_share | REAL | NOT NULL DEFAULT 51 | 1口あたり利益 |
 | net_asset_per_share | REAL | NOT NULL DEFAULT 395 | 1口あたり純資産 |
@@ -290,23 +290,23 @@ erDiagram
     valuations ||--o{ investors : "has many"
 
     companies {
-        TEXT id PK
+        INTEGER id PK
         TEXT company_name UK
         DATETIME created_at
         DATETIME updated_at
     }
 
     users {
-        TEXT id PK
+        INTEGER id PK
         TEXT name UK
         DATETIME created_at
         DATETIME updated_at
     }
 
     valuations {
-        TEXT id PK
-        TEXT company_id FK
-        TEXT user_id FK
+        INTEGER id PK
+        INTEGER company_id FK
+        INTEGER user_id FK
         TEXT fiscal_year
         DATETIME created_at
         DATETIME updated_at
@@ -314,7 +314,7 @@ erDiagram
 
     financial_data {
         INTEGER id PK
-        TEXT valuation_id FK
+        INTEGER valuation_id FK
         TEXT employees
         TEXT total_assets
         TEXT sales
@@ -330,7 +330,7 @@ erDiagram
 
     investors {
         INTEGER id PK
-        TEXT valuation_id FK
+        INTEGER valuation_id FK
         TEXT investor_name
         INTEGER shares_held
         REAL shareholding_ratio
@@ -339,7 +339,7 @@ erDiagram
     }
 
     similar_industry_data {
-        TEXT id PK
+        INTEGER id PK
         TEXT fiscal_year UK
         REAL profit_per_share
         REAL net_asset_per_share

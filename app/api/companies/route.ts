@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
       tableName: 'companies',
       nameField: 'company_name',
       data: { name: company_name },
-      idPrefix: 'company',
     });
   } catch (error) {
     console.error('データベースエラー:', error);

@@ -33,29 +33,29 @@ export async function POST(request: NextRequest) {
     // トランザクション開始
     const transaction = db.transaction(() => {
       // 1. 会社の存在確認または作成
-      let company = db.prepare('SELECT id FROM companies WHERE company_name = ?').get(companyName) as { id: string } | undefined;
+      let company = db.prepare('SELECT id FROM companies WHERE company_name = ?').get(companyName) as { id: number } | undefined;
 
-      let companyId: string;
+      let companyId: number;
       if (!company) {
-        companyId = `company_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        db.prepare(`
-          INSERT INTO companies (id, company_name)
-          VALUES (?, ?)
-        `).run(companyId, companyName);
+        const result = db.prepare(`
+          INSERT INTO companies (company_name)
+          VALUES (?)
+        `).run(companyName);
+        companyId = result.lastInsertRowid as number;
       } else {
         companyId = company.id;
       }
 
       // 2. 担当者の存在確認または作成
-      let user = db.prepare('SELECT id FROM users WHERE name = ?').get(personInCharge) as { id: string } | undefined;
+      let user = db.prepare('SELECT id FROM users WHERE name = ?').get(personInCharge) as { id: number } | undefined;
 
-      let userId: string;
+      let userId: number;
       if (!user) {
-        userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        db.prepare(`
-          INSERT INTO users (id, name)
-          VALUES (?, ?)
-        `).run(userId, personInCharge);
+        const result = db.prepare(`
+          INSERT INTO users (name)
+          VALUES (?)
+        `).run(personInCharge);
+        userId = result.lastInsertRowid as number;
       } else {
         userId = user.id;
       }
@@ -63,8 +63,11 @@ export async function POST(request: NextRequest) {
       // 3. 既存の評価レコードをチェック
       const existing = db.prepare('SELECT id FROM valuations WHERE id = ?').get(id);
 
+      let valuationId: number;
+
       if (existing) {
         // 更新
+        valuationId = id;
         db.prepare(`
           UPDATE valuations SET
             company_id = ?,
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
             fiscal_year = ?,
             updated_at = CURRENT_TIMESTAMP
           WHERE id = ?
-        `).run(companyId, userId, fiscalYear, id);
+        `).run(companyId, userId, fiscalYear, valuationId);
 
         // 財務データを更新
         db.prepare(`
@@ -98,21 +101,22 @@ export async function POST(request: NextRequest) {
           currentPeriodProfit,
           previousPeriodProfit,
           previousPreviousPeriodProfit,
-          id
+          valuationId
         );
 
         // 既存の投資家データを削除して再作成
-        db.prepare('DELETE FROM investors WHERE valuation_id = ?').run(id);
+        db.prepare('DELETE FROM investors WHERE valuation_id = ?').run(valuationId);
       } else {
         // 新規作成
-        db.prepare(`
+        const valuationResult = db.prepare(`
           INSERT INTO valuations (
-            id,
             company_id,
             user_id,
             fiscal_year
-          ) VALUES (?, ?, ?, ?)
-        `).run(id, companyId, userId, fiscalYear);
+          ) VALUES (?, ?, ?)
+        `).run(companyId, userId, fiscalYear);
+
+        valuationId = valuationResult.lastInsertRowid as number;
 
         // 財務データを作成
         db.prepare(`
@@ -129,7 +133,7 @@ export async function POST(request: NextRequest) {
             previous_previous_period_profit
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
-          id,
+          valuationId,
           employees,
           totalAssets,
           sales,
@@ -161,7 +165,7 @@ export async function POST(request: NextRequest) {
           const ratio = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
 
           investorStmt.run(
-            id,
+            valuationId,
             investor.name || '',
             amount,
             ratio

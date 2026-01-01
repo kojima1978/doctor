@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getDatabase } from './db';
-import { generateId } from './utils';
 
 /**
  * 共通のCRUD操作ユーティリティ
@@ -10,20 +9,19 @@ interface CreateOptions {
   tableName: string;
   nameField: string;
   data: { name: string };
-  idPrefix: string;
 }
 
 interface UpdateOptions {
   tableName: string;
   nameField: string;
-  data: { id: string; name: string };
+  data: { id: number; name: string };
 }
 
 /**
  * 新規レコード作成
  */
 export async function createRecord(options: CreateOptions) {
-  const { tableName, nameField, data, idPrefix } = options;
+  const { tableName, nameField, data } = options;
   const db = getDatabase();
 
   // 重複チェック
@@ -39,9 +37,7 @@ export async function createRecord(options: CreateOptions) {
   }
 
   // 新規作成
-  const id = generateId(idPrefix, 9);
-  db.prepare(`INSERT INTO ${tableName} (id, ${nameField}) VALUES (?, ?)`).run(
-    id,
+  db.prepare(`INSERT INTO ${tableName} (${nameField}) VALUES (?)`).run(
     data.name
   );
 

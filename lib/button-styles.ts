@@ -39,7 +39,8 @@ export const inlineButtonStyle = {
   transition: 'all 0.2s ease',
   fontSize: '0.75rem',
   padding: '0.25rem 0.5rem',
-  marginLeft: '0.5rem'
+  marginLeft: '0.5rem',
+  borderRadius: '0.375rem'
 };
 
 export const buttonHoverClass = 'hover:bg-gray-200 hover:border-gray-400 cursor-pointer';

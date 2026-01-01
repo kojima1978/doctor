@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, FileText } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Calculator } from 'lucide-react';
 import { FormData, CalculationResult } from '@/lib/types';
 import { calculateEvaluation } from '@/lib/calculations';
 import { useSaveValuation } from '@/hooks/useSaveValuation';
 import { validateBasicInfo } from '@/lib/utils';
 import { toWareki } from '@/lib/date-utils';
 import { buttonStyle, buttonHoverClass } from '@/lib/button-styles';
+import CalculationDetailsModal from '@/components/CalculationDetailsModal';
 
 export default function Results() {
   const router = useRouter();
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
   const { saveValuation, isSaving } = useSaveValuation();
+  const [modalOpen, setModalOpen] = useState<'similar' | 'netAsset' | null>(null);
 
   useEffect(() => {
     const loadDataAndCalculate = async () => {
@@ -225,7 +227,18 @@ export default function Results() {
               <td className="text-right">{result.deemedGiftTax.toLocaleString('ja-JP')}千円</td>
             </tr>
             <tr>
-              <td>1口あたりの類似業種比準価額方式による評価額</td>
+              <td className="flex items-center justify-between">
+                <span>1口あたりの類似業種比準価額方式による評価額</span>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen('similar')}
+                  className="ml-2 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
+                  title="計算過程を表示"
+                >
+                  <Calculator size={14} />
+                  計算過程
+                </button>
+              </td>
               <td className="text-right">{result.perShareSimilarIndustryValue.toLocaleString('ja-JP')}円</td>
             </tr>
             <tr>
@@ -247,7 +260,18 @@ export default function Results() {
               </td>
             </tr>
             <tr>
-              <td>1口あたりの純資産価額方式による評価額</td>
+              <td className="flex items-center justify-between">
+                <span>1口あたりの純資産価額方式による評価額</span>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen('netAsset')}
+                  className="ml-2 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-1"
+                  title="計算過程を表示"
+                >
+                  <Calculator size={14} />
+                  計算過程
+                </button>
+              </td>
               <td className="text-right">{result.perShareNetAssetValue.toLocaleString('ja-JP')}円</td>
             </tr>
             <tr>
@@ -284,6 +308,17 @@ export default function Results() {
           相続税額早見表を見る
         </button>
       </div>
+
+      {modalOpen && formData && (
+        <CalculationDetailsModal
+          isOpen={true}
+          onClose={() => setModalOpen(null)}
+          type={modalOpen}
+          formData={formData}
+          totalShares={result.totalShares}
+          sizeMultiplier={result.companySize === '大会社' ? 0.7 : result.companySize.includes('中会社') ? 0.6 : 0.5}
+        />
+      )}
     </div>
   );
 }

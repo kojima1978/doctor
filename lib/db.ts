@@ -16,7 +16,7 @@ function initializeDatabase(database: Database.Database) {
   database.exec(`
     -- 会社マスタテーブル
     CREATE TABLE IF NOT EXISTS companies (
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       company_name TEXT NOT NULL UNIQUE,
       created_at DATETIME DEFAULT (datetime('now', 'localtime')),
       updated_at DATETIME DEFAULT (datetime('now', 'localtime'))
@@ -24,7 +24,7 @@ function initializeDatabase(database: Database.Database) {
 
     -- 担当者マスタテーブル
     CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL UNIQUE,
       created_at DATETIME DEFAULT (datetime('now', 'localtime')),
       updated_at DATETIME DEFAULT (datetime('now', 'localtime'))
@@ -32,9 +32,9 @@ function initializeDatabase(database: Database.Database) {
 
     -- 評価レコードテーブル
     CREATE TABLE IF NOT EXISTS valuations (
-      id TEXT PRIMARY KEY,
-      company_id TEXT NOT NULL,
-      user_id TEXT NOT NULL,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      company_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
       fiscal_year TEXT NOT NULL,
       created_at DATETIME DEFAULT (datetime('now', 'localtime')),
       updated_at DATETIME DEFAULT (datetime('now', 'localtime')),
@@ -45,7 +45,7 @@ function initializeDatabase(database: Database.Database) {
     -- 財務データテーブル
     CREATE TABLE IF NOT EXISTS financial_data (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      valuation_id TEXT NOT NULL,
+      valuation_id INTEGER NOT NULL,
       employees TEXT,
       total_assets TEXT,
       sales TEXT,
@@ -63,7 +63,7 @@ function initializeDatabase(database: Database.Database) {
     -- 投資家テーブル
     CREATE TABLE IF NOT EXISTS investors (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      valuation_id TEXT NOT NULL,
+      valuation_id INTEGER NOT NULL,
       investor_name TEXT NOT NULL,
       shares_held INTEGER,
       shareholding_ratio REAL,
@@ -74,7 +74,7 @@ function initializeDatabase(database: Database.Database) {
 
     -- 類似業種データマスタテーブル
     CREATE TABLE IF NOT EXISTS similar_industry_data (
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       fiscal_year TEXT NOT NULL UNIQUE,
       profit_per_share REAL NOT NULL DEFAULT 51,
       net_asset_per_share REAL NOT NULL DEFAULT 395,
@@ -95,11 +95,10 @@ function initializeDatabase(database: Database.Database) {
   const defaultYear = '2024';
   const existingDefault = database.prepare('SELECT id FROM similar_industry_data WHERE fiscal_year = ?').get(defaultYear);
   if (!existingDefault) {
-    const id = `sim_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     database.prepare(`
-      INSERT INTO similar_industry_data (id, fiscal_year, profit_per_share, net_asset_per_share, average_stock_price)
-      VALUES (?, ?, 51, 395, 532)
-    `).run(id, defaultYear);
+      INSERT INTO similar_industry_data (fiscal_year, profit_per_share, net_asset_per_share, average_stock_price)
+      VALUES (?, 51, 395, 532)
+    `).run(defaultYear);
   }
 }
 

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # 開発環境用
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    container_name: doctor-nextjs-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # ソースコードをマウント（ホットリロード用）
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      # データベースを永続化
+      - sqlite-data:/app/data
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    command: npm run dev
+    stdin_open: true
+    tty: true
+
+  # 本番環境用
+  prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: doctor-nextjs-prod
+    ports:
+      - "3001:3000"
+    volumes:
+      # データベースのみ永続化
+      - sqlite-data:/app/data
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+volumes:
+  sqlite-data:
+    driver: local
