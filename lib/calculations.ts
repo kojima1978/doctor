@@ -10,6 +10,27 @@ export interface CompanySizeResult {
 }
 
 /**
+ * 1口あたりの値を計算するヘルパー関数
+ */
+export function calculatePerShareValue(amount: number, totalShares: number): number {
+  return totalShares > 0 ? Math.floor(Math.max(0, amount / totalShares)) : 0;
+}
+
+/**
+ * 比準割合を計算するヘルパー関数
+ */
+export function calculateComparisonRatio(companyValue: number, similarValue: number): number {
+  return similarValue !== 0 ? Math.floor((companyValue / similarValue) * 100) / 100 : 0;
+}
+
+/**
+ * 平均比準割合を計算するヘルパー関数
+ */
+export function calculateAverageRatio(ratioC: number, ratioD: number): number {
+  return Math.floor(((ratioC + ratioD) / 2) * 100) / 100;
+}
+
+/**
  * 会社規模を判定する（小売・サービス業/医療法人基準）
  * 国税庁通達179号に基づく
  */
@@ -155,42 +176,28 @@ function calculateSimilarIndustryValue(
   const profit3Prev = formData.previousPreviousPeriodProfit; // 直前々々期（円）
 
   // cの計算: 直前期と(直前期+直前々期)÷2の低い方
-  const profitPerSharePrev = totalShares > 0 ? profitPrev / totalShares : 0;
-  const profitPrevPerShare = Math.floor(Math.max(0, profitPerSharePrev));
-
+  const profitPrevPerShare = calculatePerShareValue(profitPrev, totalShares);
   const avgProfit12 = (profitPrev + profit2Prev) / 2; // 直前期と直前々期の平均
-  const profitPerShareAvg12 = totalShares > 0 ? avgProfit12 / totalShares : 0;
-  const profitAvgPerShare12 = Math.floor(Math.max(0, profitPerShareAvg12));
-
+  const profitAvgPerShare12 = calculatePerShareValue(avgProfit12, totalShares);
   const c = Math.min(profitPrevPerShare, profitAvgPerShare12);
 
   // c1の計算: 直前期と(直前期+直前々期)÷2の高い方
   const c1 = Math.max(profitPrevPerShare, profitAvgPerShare12);
 
   // c2の計算: 直前々期と(直前々期+直前々々期)÷2の高い方
-  const profit2PerSharePrev = totalShares > 0 ? profit2Prev / totalShares : 0;
-  const profit2PrevPerShare = Math.floor(Math.max(0, profit2PerSharePrev));
-
+  const profit2PrevPerShare = calculatePerShareValue(profit2Prev, totalShares);
   const avgProfit23 = (profit2Prev + profit3Prev) / 2; // 直前々期と直前々々期の平均
-  const profitPerShareAvg23 = totalShares > 0 ? avgProfit23 / totalShares : 0;
-  const profitAvgPerShare23 = Math.floor(Math.max(0, profitPerShareAvg23));
-
+  const profitAvgPerShare23 = calculatePerShareValue(avgProfit23, totalShares);
   const c2 = Math.max(profit2PrevPerShare, profitAvgPerShare23);
 
   // 純資産（直前期の相続税評価額）（円単位）
-  const netAsset = formData.netAssetTaxValue;
-  const netAssetPerShare = totalShares > 0 ? netAsset / totalShares : 0;
-  const d = Math.floor(netAssetPerShare);
+  const d = calculatePerShareValue(formData.netAssetTaxValue, totalShares);
 
   // d1の計算: 直前期の帳簿価額による純資産（円単位）
-  const netAsset1 = formData.currentPeriodNetAsset;
-  const netAssetPerShare1 = totalShares > 0 ? netAsset1 / totalShares : 0;
-  const d1 = Math.floor(netAssetPerShare1);
+  const d1 = calculatePerShareValue(formData.currentPeriodNetAsset, totalShares);
 
   // d2の計算: 直前々期の純資産（円単位）
-  const netAsset2 = formData.previousPeriodNetAsset;
-  const netAssetPerShare2 = totalShares > 0 ? netAsset2 / totalShares : 0;
-  const d2 = Math.floor(netAssetPerShare2);
+  const d2 = calculatePerShareValue(formData.previousPeriodNetAsset, totalShares);
 
   // デバッグ用ログ
   console.log('比準要素判定:', {
@@ -219,16 +226,11 @@ function calculateSimilarIndustryValue(
   }
 
   // 比準割合の計算（医療法人は配当を除く2要素で計算）
-  let ratioC = 0;
-  let ratioD = 0;
-
-  if (C !== 0 && D !== 0) {
-    ratioC = Math.floor((c / C) * 100) / 100;
-    ratioD = Math.floor((d / D) * 100) / 100;
-  }
+  const ratioC = calculateComparisonRatio(c, C);
+  const ratioD = calculateComparisonRatio(d, D);
 
   // 医療法人の場合は（利益比準 + 純資産比準）÷ 2
-  const avgRatio = Math.floor(((ratioC + ratioD) / 2) * 100) / 100;
+  const avgRatio = calculateAverageRatio(ratioC, ratioD);
 
   // 類似業種比準価額（50円あたり）
   const S_50 = Math.floor(A * avgRatio * sizeMultiplier);

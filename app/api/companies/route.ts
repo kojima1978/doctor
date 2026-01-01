@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { createRecord, updateRecord } from '@/lib/api-utils';
+import { createRecord, updateRecord, withErrorHandler } from '@/lib/api-utils';
 
 export async function GET() {
-  try {
+  return withErrorHandler(async () => {
     const db = getDatabase();
     const companies = db.prepare('SELECT id, company_name, created_at, updated_at FROM companies ORDER BY company_name').all();
     return NextResponse.json(companies);
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '会社一覧の取得に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '会社一覧の取得に失敗しました');
 }
 
 export async function POST(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { company_name } = await request.json();
 
     if (!company_name || !company_name.trim()) {
@@ -32,17 +26,11 @@ export async function POST(request: NextRequest) {
       nameField: 'company_name',
       data: { name: company_name },
     });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '会社の登録に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '会社の登録に失敗しました');
 }
 
 export async function PUT(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { id, company_name } = await request.json();
 
     if (!id || !company_name || !company_name.trim()) {
@@ -57,17 +45,11 @@ export async function PUT(request: NextRequest) {
       nameField: 'company_name',
       data: { id, name: company_name },
     });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '会社情報の更新に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '会社情報の更新に失敗しました');
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -83,11 +65,5 @@ export async function DELETE(request: NextRequest) {
     stmt.run(id);
 
     return NextResponse.json({ message: '会社を削除しました' });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '会社の削除に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '会社の削除に失敗しました');
 }

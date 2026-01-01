@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { createRecord, updateRecord } from '@/lib/api-utils';
+import { createRecord, updateRecord, withErrorHandler } from '@/lib/api-utils';
 
 export async function GET() {
-  try {
+  return withErrorHandler(async () => {
     const db = getDatabase();
     const users = db.prepare('SELECT id, name, created_at, updated_at FROM users ORDER BY name').all();
     return NextResponse.json(users);
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: 'ユーザー一覧の取得に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, 'ユーザー一覧の取得に失敗しました');
 }
 
 export async function POST(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { name } = await request.json();
 
     if (!name || !name.trim()) {
@@ -32,17 +26,11 @@ export async function POST(request: NextRequest) {
       nameField: 'name',
       data: { name },
     });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '担当者の登録に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '担当者の登録に失敗しました');
 }
 
 export async function PUT(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { id, name } = await request.json();
 
     if (!id || !name || !name.trim()) {
@@ -57,17 +45,11 @@ export async function PUT(request: NextRequest) {
       nameField: 'name',
       data: { id, name },
     });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '担当者情報の更新に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '担当者情報の更新に失敗しました');
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -83,11 +65,5 @@ export async function DELETE(request: NextRequest) {
     stmt.run(id);
 
     return NextResponse.json({ message: '担当者を削除しました' });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '担当者の削除に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '担当者の削除に失敗しました');
 }

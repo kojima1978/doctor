@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { withErrorHandler } from '@/lib/api-utils';
 
 export async function POST(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const data = await request.json();
     const {
       id,
@@ -177,18 +178,11 @@ export async function POST(request: NextRequest) {
     transaction();
 
     return NextResponse.json({ success: true, message: 'データを保存しました' });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    const errorMessage = error instanceof Error ? error.message : 'データの保存に失敗しました';
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
-  }
+  }, 'データの保存に失敗しました');
 }
 
 export async function GET(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -334,17 +328,11 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json(results);
     }
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: 'データの取得に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, 'データの取得に失敗しました');
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -372,11 +360,5 @@ export async function DELETE(request: NextRequest) {
     stmt.run(id);
 
     return NextResponse.json({ success: true, message: 'データを削除しました' });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: 'データの削除に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, 'データの削除に失敗しました');
 }

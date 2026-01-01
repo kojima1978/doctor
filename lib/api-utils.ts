@@ -5,6 +5,29 @@ import { getDatabase } from './db';
  * 共通のCRUD操作ユーティリティ
  */
 
+/**
+ * APIハンドラーのエラーハンドリングラッパー
+ */
+export async function withErrorHandler<T>(
+  handler: () => Promise<T> | T,
+  errorMessage: string = 'エラーが発生しました'
+): Promise<NextResponse> {
+  try {
+    const result = await handler();
+    if (result instanceof NextResponse) {
+      return result;
+    }
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('データベースエラー:', error);
+    const message = error instanceof Error ? error.message : errorMessage;
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
+  }
+}
+
 interface CreateOptions {
   tableName: string;
   nameField: string;

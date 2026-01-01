@@ -10,7 +10,7 @@ import Step1CompanySize from '@/components/valuation/Step1CompanySize';
 import Step2FinancialData from '@/components/valuation/Step2FinancialData';
 import Step3Investors from '@/components/valuation/Step3Investors';
 import { useSaveValuation } from '@/hooks/useSaveValuation';
-import { validateBasicInfo } from '@/lib/utils';
+import { validateBasicInfo, validateStep1, validateStep2, validateStep3 } from '@/lib/utils';
 import { buttonStyle, buttonHoverClass } from '@/lib/button-styles';
 
 export default function Home() {
@@ -95,21 +95,25 @@ export default function Home() {
       return;
     }
 
-    if (!employees || !totalAssets || !sales) {
-      alert('STEP1の従業員数、総資産、売上高を選択してください。');
+    const step1Validation = validateStep1({ employees, totalAssets, sales });
+    if (!step1Validation.isValid) {
+      alert(step1Validation.message);
       return;
     }
 
-    if (!currentPeriodNetAsset || !netAssetTaxValue || !currentPeriodProfit) {
-      alert('STEP2の直前期の純資産、相続税評価額による純資産、直前期の利益を入力してください。');
+    const step2Validation = validateStep2({ currentPeriodNetAsset, netAssetTaxValue, currentPeriodProfit });
+    if (!step2Validation.isValid) {
+      alert(step2Validation.message);
       return;
     }
 
-    const validInvestors = investors.filter((inv) => inv.name || inv.amount);
-    if (validInvestors.length === 0) {
-      alert('STEP3の出資者情報を入力してください。');
+    const step3Validation = validateStep3(investors);
+    if (!step3Validation.isValid) {
+      alert(step3Validation.message);
       return;
     }
+
+    const validInvestors = step3Validation.validInvestors!;
 
     const formData = {
       fiscalYear,
@@ -136,21 +140,25 @@ export default function Home() {
   };
 
   const goToResults = () => {
-    if (!employees || !totalAssets || !sales) {
-      alert('STEP1の従業員数、総資産、売上高を選択してください。');
+    const step1Validation = validateStep1({ employees, totalAssets, sales });
+    if (!step1Validation.isValid) {
+      alert(step1Validation.message);
       return;
     }
 
-    if (!currentPeriodNetAsset || !netAssetTaxValue || !currentPeriodProfit) {
-      alert('STEP2の直前期の純資産、相続税評価額による純資産、直前期の利益を入力してください。');
+    const step2Validation = validateStep2({ currentPeriodNetAsset, netAssetTaxValue, currentPeriodProfit });
+    if (!step2Validation.isValid) {
+      alert(step2Validation.message);
       return;
     }
 
-    const validInvestors = investors.filter((inv) => inv.name || inv.amount);
-    if (validInvestors.length === 0) {
-      alert('STEP3の出資者情報を入力してください。');
+    const step3Validation = validateStep3(investors);
+    if (!step3Validation.isValid) {
+      alert(step3Validation.message);
       return;
     }
+
+    const validInvestors = step3Validation.validInvestors!;
 
     const formData = {
       fiscalYear,

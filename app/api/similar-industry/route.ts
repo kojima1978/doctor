@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { withErrorHandler } from '@/lib/api-utils';
 
 export async function GET(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const db = getDatabase();
     const { searchParams } = new URL(request.url);
     const fiscalYear = searchParams.get('fiscalYear');
@@ -31,17 +32,11 @@ export async function GET(request: NextRequest) {
         .all();
       return NextResponse.json(allData);
     }
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '類似業種データの取得に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '類似業種データの取得に失敗しました');
 }
 
 export async function POST(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { fiscal_year, profit_per_share, net_asset_per_share, average_stock_price } =
       await request.json();
 
@@ -87,17 +82,11 @@ export async function POST(request: NextRequest) {
       success: true,
       message: '類似業種データを登録しました',
     });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '類似業種データの登録に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '類似業種データの登録に失敗しました');
 }
 
 export async function PUT(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { id, fiscal_year, profit_per_share, net_asset_per_share, average_stock_price } =
       await request.json();
 
@@ -156,17 +145,11 @@ export async function PUT(request: NextRequest) {
       success: true,
       message: '類似業種データを更新しました',
     });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '類似業種データの更新に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '類似業種データの更新に失敗しました');
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
+  return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -191,11 +174,5 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: '類似業種データを削除しました',
     });
-  } catch (error) {
-    console.error('データベースエラー:', error);
-    return NextResponse.json(
-      { error: '類似業種データの削除に失敗しました' },
-      { status: 500 }
-    );
-  }
+  }, '類似業種データの削除に失敗しました');
 }

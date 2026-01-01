@@ -3,6 +3,7 @@
 import { FormData } from '@/lib/types';
 import { toWareki } from '@/lib/date-utils';
 import { buttonStyle, buttonHoverClass } from '@/lib/button-styles';
+import { calculatePerShareValue, calculateComparisonRatio, calculateAverageRatio } from '@/lib/calculations';
 
 interface CalculationDetailsModalProps {
   isOpen: boolean;
@@ -39,24 +40,18 @@ export default function CalculationDetailsModal({
     const profitPrev = formData.currentPeriodProfit;
     const profit2Prev = formData.previousPeriodProfit;
 
-    const profitPerSharePrev = totalShares > 0 ? profitPrev / totalShares : 0;
-    const profitPrevPerShare = Math.floor(Math.max(0, profitPerSharePrev));
-
+    const profitPrevPerShare = calculatePerShareValue(profitPrev, totalShares);
     const avgProfit12 = (profitPrev + profit2Prev) / 2;
-    const profitPerShareAvg12 = totalShares > 0 ? avgProfit12 / totalShares : 0;
-    const profitAvgPerShare12 = Math.floor(Math.max(0, profitPerShareAvg12));
-
+    const profitAvgPerShare12 = calculatePerShareValue(avgProfit12, totalShares);
     const c = Math.min(profitPrevPerShare, profitAvgPerShare12);
 
     // 純資産（円単位）
-    const netAsset = formData.netAssetTaxValue;
-    const netAssetPerShare = totalShares > 0 ? netAsset / totalShares : 0;
-    const d = Math.floor(netAssetPerShare);
+    const d = calculatePerShareValue(formData.netAssetTaxValue, totalShares);
 
     // 比準割合
-    const ratioC = C !== 0 ? Math.floor((c / C) * 100) / 100 : 0;
-    const ratioD = D !== 0 ? Math.floor((d / D) * 100) / 100 : 0;
-    const avgRatio = Math.floor(((ratioC + ratioD) / 2) * 100) / 100;
+    const ratioC = calculateComparisonRatio(c, C);
+    const ratioD = calculateComparisonRatio(d, D);
+    const avgRatio = calculateAverageRatio(ratioC, ratioD);
 
     const S_50 = Math.floor(A * avgRatio * sizeMultiplier);
 
@@ -162,7 +157,7 @@ export default function CalculationDetailsModal({
     const evalDiff = netAssetInheritance - netAssetBook;
     const tax = evalDiff > 0 ? evalDiff * 0.37 : 0;
     const netAssetAdjusted = netAssetInheritance - tax;
-    const N = totalShares > 0 ? Math.floor(netAssetAdjusted / totalShares) : 0;
+    const N = calculatePerShareValue(netAssetAdjusted, totalShares);
 
     return (
       <div className="space-y-4">
