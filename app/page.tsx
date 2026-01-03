@@ -12,6 +12,7 @@ import Step3Investors from '@/components/valuation/Step3Investors';
 import { useSaveValuation } from '@/hooks/useSaveValuation';
 import { validateBasicInfo, validateStep1, validateStep2, validateStep3 } from '@/lib/utils';
 import { buttonStyle, buttonHoverClass } from '@/lib/button-styles';
+import { toWareki } from '@/lib/date-utils';
 
 export default function Home() {
   const router = useRouter();
@@ -248,10 +249,10 @@ export default function Home() {
       />
 
       <div className="mt-8">
-        {currentDataId && (
+        {currentDataId && companyName && fiscalYear && personInCharge && (
           <div className="card mb-4 bg-blue-50">
             <p className="text-sm text-blue-700 m-0">
-              読み込み中のデータID: <span className="font-mono font-semibold">{currentDataId}</span>
+              読み込み中: <span className="font-semibold">{companyName}</span> / <span className="font-semibold">{toWareki(fiscalYear)}年度</span> / <span className="font-semibold">{personInCharge}</span>
             </p>
           </div>
         )}
