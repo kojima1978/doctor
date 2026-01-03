@@ -250,8 +250,8 @@ export default function Home() {
 
       <div className="mt-8">
         {currentDataId && companyName && fiscalYear && personInCharge && (
-          <div className="card mb-4 bg-blue-50">
-            <p className="text-sm text-blue-700 m-0">
+          <div className="card mb-4 bg-gray-100">
+            <p className="text-sm text-gray-700 m-0">
               読み込み中: <span className="font-semibold">{companyName}</span> / <span className="font-semibold">{toWareki(fiscalYear)}年度</span> / <span className="font-semibold">{personInCharge}</span>
             </p>
           </div>
