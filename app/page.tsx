@@ -90,34 +90,37 @@ export default function Home() {
     }
   };
 
-  const handleSaveAsNew = async () => {
-    const validation = validateBasicInfo({ fiscalYear, companyName, personInCharge });
-    if (!validation.isValid) {
-      alert(validation.message);
-      return;
+  const validateAllSteps = () => {
+    const basicValidation = validateBasicInfo({ fiscalYear, companyName, personInCharge });
+    if (!basicValidation.isValid) {
+      alert(basicValidation.message);
+      return null;
     }
 
     const step1Validation = validateStep1({ employees, totalAssets, sales });
     if (!step1Validation.isValid) {
       alert(step1Validation.message);
-      return;
+      return null;
     }
 
     const step2Validation = validateStep2({ currentPeriodNetAsset, netAssetTaxValue, currentPeriodProfit });
     if (!step2Validation.isValid) {
       alert(step2Validation.message);
-      return;
+      return null;
     }
 
     const step3Validation = validateStep3(investors);
     if (!step3Validation.isValid) {
       alert(step3Validation.message);
-      return;
+      return null;
     }
 
-    const validInvestors = step3Validation.validInvestors!;
+    return step3Validation.validInvestors!;
+  };
 
-    const formData = {
+  const buildFormData = (validInvestors: Array<{ name: string; amount: number }>, includeId = false) => {
+    return {
+      ...(includeId && currentDataId ? { id: currentDataId } : {}),
       fiscalYear,
       companyName,
       personInCharge,
@@ -132,8 +135,15 @@ export default function Home() {
       previousPreviousPeriodProfit: parseFloat(previousPreviousPeriodProfit) || 0,
       investors: validInvestors,
     };
+  };
 
+  const handleSaveAsNew = async () => {
+    const validInvestors = validateAllSteps();
+    if (!validInvestors) return;
+
+    const formData = buildFormData(validInvestors);
     const result = await saveAsNew(formData);
+
     if (result.success) {
       setCurrentDataId(result.id);
       alert('新規データとして保存しました。');
@@ -143,100 +153,25 @@ export default function Home() {
   };
 
   const handleSaveOverwrite = async () => {
-    const validation = validateBasicInfo({ fiscalYear, companyName, personInCharge });
-    if (!validation.isValid) {
-      alert(validation.message);
-      return;
-    }
+    const validInvestors = validateAllSteps();
+    if (!validInvestors) return;
 
-    const step1Validation = validateStep1({ employees, totalAssets, sales });
-    if (!step1Validation.isValid) {
-      alert(step1Validation.message);
-      return;
-    }
-
-    const step2Validation = validateStep2({ currentPeriodNetAsset, netAssetTaxValue, currentPeriodProfit });
-    if (!step2Validation.isValid) {
-      alert(step2Validation.message);
-      return;
-    }
-
-    const step3Validation = validateStep3(investors);
-    if (!step3Validation.isValid) {
-      alert(step3Validation.message);
-      return;
-    }
-
-    const validInvestors = step3Validation.validInvestors!;
-
-    const formData = {
-      id: currentDataId,
-      fiscalYear,
-      companyName,
-      personInCharge,
-      employees,
-      totalAssets,
-      sales,
-      currentPeriodNetAsset: parseFloat(currentPeriodNetAsset) || 0,
-      previousPeriodNetAsset: parseFloat(previousPeriodNetAsset) || 0,
-      netAssetTaxValue: parseFloat(netAssetTaxValue) || 0,
-      currentPeriodProfit: parseFloat(currentPeriodProfit) || 0,
-      previousPeriodProfit: parseFloat(previousPeriodProfit) || 0,
-      previousPreviousPeriodProfit: parseFloat(previousPreviousPeriodProfit) || 0,
-      investors: validInvestors,
-    };
-
+    const formData = buildFormData(validInvestors, true);
     const result = await saveOverwrite(formData);
+
     if (result.success) {
       setCurrentDataId(result.id);
-      if (currentDataId) {
-        alert('データを上書き保存しました。');
-      } else {
-        alert('新規データとして保存しました。');
-      }
+      alert(currentDataId ? 'データを上書き保存しました。' : '新規データとして保存しました。');
     } else {
       alert('データの保存に失敗しました。再度お試しください。');
     }
   };
 
   const goToResults = () => {
-    const step1Validation = validateStep1({ employees, totalAssets, sales });
-    if (!step1Validation.isValid) {
-      alert(step1Validation.message);
-      return;
-    }
+    const validInvestors = validateAllSteps();
+    if (!validInvestors) return;
 
-    const step2Validation = validateStep2({ currentPeriodNetAsset, netAssetTaxValue, currentPeriodProfit });
-    if (!step2Validation.isValid) {
-      alert(step2Validation.message);
-      return;
-    }
-
-    const step3Validation = validateStep3(investors);
-    if (!step3Validation.isValid) {
-      alert(step3Validation.message);
-      return;
-    }
-
-    const validInvestors = step3Validation.validInvestors!;
-
-    const formData = {
-      id: currentDataId,
-      fiscalYear,
-      companyName,
-      personInCharge,
-      employees,
-      totalAssets,
-      sales,
-      currentPeriodNetAsset: parseFloat(currentPeriodNetAsset) || 0,
-      previousPeriodNetAsset: parseFloat(previousPeriodNetAsset) || 0,
-      netAssetTaxValue: parseFloat(netAssetTaxValue) || 0,
-      currentPeriodProfit: parseFloat(currentPeriodProfit) || 0,
-      previousPeriodProfit: parseFloat(previousPeriodProfit) || 0,
-      previousPreviousPeriodProfit: parseFloat(previousPreviousPeriodProfit) || 0,
-      investors: validInvestors,
-    };
-
+    const formData = buildFormData(validInvestors, true);
     localStorage.setItem('formData', JSON.stringify(formData));
     router.push('/results');
   };

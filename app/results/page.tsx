@@ -15,7 +15,7 @@ export default function Results() {
   const router = useRouter();
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
-  const { saveValuation, isSaving } = useSaveValuation();
+  const { saveOverwrite, isSaving } = useSaveValuation();
   const [modalOpen, setModalOpen] = useState<'similar' | 'netAsset' | null>(null);
 
   useEffect(() => {
@@ -76,10 +76,9 @@ export default function Results() {
       return;
     }
 
-    const success = await saveValuation(formData);
-    if (success) {
+    const result = await saveOverwrite(formData);
+    if (result.success) {
       alert('データをデータベースに保存しました。');
-      // Reload formData from localStorage (it will have the updated ID)
       const savedData = localStorage.getItem('formData');
       if (savedData) {
         setFormData(JSON.parse(savedData));

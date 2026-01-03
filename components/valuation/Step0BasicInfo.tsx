@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { File, Building2, CalendarDays, UserPen } from 'lucide-react';
-import Modal from '@/components/Modal';
 import { toWareki } from '@/lib/date-utils';
 import { buttonStyle, btnHoverClass } from '@/lib/button-styles';
 
@@ -35,7 +34,6 @@ export default function Step0BasicInfo({
     const router = useRouter();
     const [users, setUsers] = useState<User[]>([]);
     const [companies, setCompanies] = useState<Company[]>([]);
-    const buttonHoverClass = btnHoverClass;
 
     const currentYear = new Date().getFullYear();
     const yearOptions = [];
@@ -80,7 +78,7 @@ export default function Step0BasicInfo({
                 <h2 className="mt-0 mb-0">STEP０．基本情報を入力する</h2>
                 <button
                     onClick={() => router.push('/saved-data')}
-                    className={buttonHoverClass}
+                    className={btnHoverClass}
                     style={buttonStyle}
                 >
                     <File size={20} />
@@ -111,7 +109,7 @@ export default function Step0BasicInfo({
                                 </select>
                                 <a
                                     href="/company-settings"
-                                    className={buttonHoverClass}
+                                    className={btnHoverClass}
                                     style={{ ...buttonStyle, textDecoration: 'none' }}
                                 >
                                     <Building2 size={20} />
@@ -138,7 +136,7 @@ export default function Step0BasicInfo({
                                 </select>
                                 <a
                                     href="/similar-industry-settings"
-                                    className={buttonHoverClass}
+                                    className={btnHoverClass}
                                     style={{ ...buttonStyle, textDecoration: 'none' }}
                                 >
                                     <CalendarDays size={20} />
@@ -165,7 +163,7 @@ export default function Step0BasicInfo({
                                 </select>
                                 <a
                                     href="/user-settings"
-                                    className={buttonHoverClass}
+                                    className={btnHoverClass}
                                     style={{ ...buttonStyle, textDecoration: 'none' }}
                                 >
                                     <UserPen size={20} />

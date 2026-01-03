@@ -29,7 +29,6 @@ export default function SimilarIndustrySettingsPage() {
   const [profitPerShare, setProfitPerShare] = useState('51');
   const [netAssetPerShare, setNetAssetPerShare] = useState('395');
   const [averageStockPrice, setAverageStockPrice] = useState('532');
-  const buttonHoverClass = btnHoverClass;
 
   useEffect(() => {
     loadData();
@@ -150,7 +149,7 @@ export default function SimilarIndustrySettingsPage() {
           <br />
           評価額計算時に、選択した年度のデータが自動的に使用されます。
         </p>
-        <button onClick={handleOpenCreateModal} className={buttonHoverClass} style={buttonStyle}>
+        <button onClick={handleOpenCreateModal} className={btnHoverClass} style={buttonStyle}>
           <Plus size={20} />
           新規登録
         </button>
@@ -187,7 +186,7 @@ export default function SimilarIndustrySettingsPage() {
                     <div className="flex gap-2 justify-center">
                       <button
                         onClick={() => handleOpenEditModal(record)}
-                        className={buttonHoverClass}
+                        className={btnHoverClass}
                         style={smallButtonStyle}
                       >
                         <Edit2 size={16} />
@@ -195,7 +194,7 @@ export default function SimilarIndustrySettingsPage() {
                       </button>
                       <button
                         onClick={() => handleDelete(record.id, toWareki(record.fiscal_year))}
-                        className={buttonHoverClass}
+                        className={btnHoverClass}
                         style={smallButtonStyle}
                       >
                         <Trash2 size={16} />
@@ -211,7 +210,7 @@ export default function SimilarIndustrySettingsPage() {
       )}
 
       <div className="mt-6">
-        <button onClick={() => router.push('/')} className={buttonHoverClass} style={buttonStyle}>
+        <button onClick={() => router.push('/')} className={btnHoverClass} style={buttonStyle}>
           <ArrowLeft size={20} />
           入力画面へ戻る
         </button>
@@ -293,13 +292,13 @@ export default function SimilarIndustrySettingsPage() {
             <button
               type="button"
               onClick={() => setIsFormModalOpen(false)}
-              className={buttonHoverClass}
+              className={btnHoverClass}
               style={buttonStyle}
             >
               <X size={20} />
               キャンセル
             </button>
-            <button type="submit" className={buttonHoverClass} style={buttonStyle}>
+            <button type="submit" className={btnHoverClass} style={buttonStyle}>
               <Save size={20} />
               {formMode === 'create' ? '登録' : '更新'}
             </button>

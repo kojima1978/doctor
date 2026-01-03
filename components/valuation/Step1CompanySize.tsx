@@ -1,5 +1,3 @@
-import React from 'react';
-
 type Props = {
     employees: string;
     setEmployees: (value: string) => void;

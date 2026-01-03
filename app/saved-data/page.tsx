@@ -21,7 +21,7 @@ type SavedValuation = {
   currentPeriodProfit: number;
   previousPeriodProfit: number;
   previousPreviousPeriodProfit: number;
-  investors: any; // Already parsed by API
+  investors: Array<{ name: string; amount: number }>;
   created_at: string;
   updated_at: string;
 };
@@ -39,7 +39,6 @@ export default function SavedDataPage() {
   const [filterYear, setFilterYear] = useState('');
   const [filterCompanyName, setFilterCompanyName] = useState('');
   const [filterPersonInCharge, setFilterPersonInCharge] = useState('');
-  const buttonHoverClass = btnHoverClass;
 
   useEffect(() => {
     loadData();
@@ -177,7 +176,7 @@ export default function SavedDataPage() {
         <div className="card">
           <p className="text-gray-600">{error}</p>
           <button
-            className={`${buttonHoverClass} mt-4`}
+            className={`${btnHoverClass} mt-4`}
             style={buttonStyle}
             onClick={() => router.push('/')}
           >
@@ -197,7 +196,7 @@ export default function SavedDataPage() {
         <div className="card">
           <p className="mb-4">保存されたデータはありません。</p>
           <button
-            className={buttonHoverClass}
+            className={btnHoverClass}
             style={buttonStyle}
             onClick={() => router.push('/')}
           >
@@ -253,7 +252,7 @@ export default function SavedDataPage() {
                     setFilterCompanyName('');
                     setFilterPersonInCharge('');
                   }}
-                  className={buttonHoverClass}
+                  className={btnHoverClass}
                   style={smallButtonStyle}
                 >
                   <X size={16} />
@@ -302,7 +301,7 @@ export default function SavedDataPage() {
                       <div className="flex gap-2 justify-center">
                         <button
                           onClick={() => loadRecord(record)}
-                          className={buttonHoverClass}
+                          className={btnHoverClass}
                           style={smallButtonStyle}
                         >
                           <Upload size={16} />
@@ -310,7 +309,7 @@ export default function SavedDataPage() {
                         </button>
                         <button
                           onClick={() => deleteRecord(record.id)}
-                          className={buttonHoverClass}
+                          className={btnHoverClass}
                           style={smallButtonStyle}
                         >
                           <Trash2 size={16} />
@@ -327,7 +326,7 @@ export default function SavedDataPage() {
           <div className="mt-6">
             <button
               onClick={() => router.push('/')}
-              className={buttonHoverClass}
+              className={btnHoverClass}
               style={buttonStyle}
             >
               <ArrowLeft size={20} />

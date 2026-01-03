@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NumericFormat } from 'react-number-format';
 import { ListChecks, Copy } from 'lucide-react';
 import { inlineButtonStyle } from '@/lib/button-styles';
@@ -36,8 +36,6 @@ export default function Step2FinancialData({
 }: Props) {
     const [showPopup1, setShowPopup1] = useState(false);
     const [showPopup2, setShowPopup2] = useState(false);
-    const smallButtonStyle = inlineButtonStyle;
-    const buttonHoverClass = 'hover:bg-gray-200 hover:border-gray-400';
 
     return (
         <div className="card">
@@ -56,8 +54,8 @@ export default function Step2FinancialData({
                         <td>
                             「貸借対照表」の「純資産の部（又は資本の部）合計」の金額（注１）
                             <button
-                                className={buttonHoverClass}
-                                style={smallButtonStyle}
+                                className="hover:bg-gray-200 hover:border-gray-400"
+                                style={inlineButtonStyle}
                                 onClick={() => setShowPopup1(!showPopup1)}
                             >
                                 <ListChecks size={14} />
@@ -108,8 +106,8 @@ export default function Step2FinancialData({
                         <td>
                             貸借対照表の各勘定科目の金額について、相続税評価額とした金額を基に計算した「純資産」の金額を上書き入力してください。
                             <button
-                                className={buttonHoverClass}
-                                style={smallButtonStyle}
+                                className="hover:bg-gray-200 hover:border-gray-400"
+                                style={inlineButtonStyle}
                                 onClick={copyToTaxValue}
                             >
                                 <Copy size={14} />
@@ -144,8 +142,8 @@ export default function Step2FinancialData({
                         <td>
                             「損益計算書」の「税引前当期純利益」の金額
                             <button
-                                className={buttonHoverClass}
-                                style={smallButtonStyle}
+                                className="hover:bg-gray-200 hover:border-gray-400"
+                                style={inlineButtonStyle}
                                 onClick={() => setShowPopup2(!showPopup2)}
                             >
                                 <ListChecks size={14} />

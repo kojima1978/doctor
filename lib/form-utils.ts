@@ -33,7 +33,7 @@ export async function handleFormSubmit<T>(
   method: 'POST' | 'PUT',
   data: T,
   successMessage: string = '保存しました'
-): Promise<{ success: boolean; message?: string }> {
+): Promise<{ success: boolean; message: string }> {
   try {
     const response = await fetch(endpoint, {
       method,

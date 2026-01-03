@@ -27,7 +27,6 @@ export default function CompanySettingsPage() {
   const [selectedId, setSelectedId] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [showInactive, setShowInactive] = useState(false);
-  const buttonHoverClass = btnHoverClass;
 
   const loadCompanies = async () => {
     try {
@@ -138,13 +137,13 @@ export default function CompanySettingsPage() {
           評価額計算時に選択できます。
         </p>
         <div className="flex gap-2">
-          <button onClick={handleOpenCreateModal} className={buttonHoverClass} style={buttonStyle}>
+          <button onClick={handleOpenCreateModal} className={btnHoverClass} style={buttonStyle}>
             <Plus size={20} />
             新規登録
           </button>
           <button
             onClick={() => setShowInactive(!showInactive)}
-            className={buttonHoverClass}
+            className={btnHoverClass}
             style={buttonStyle}
           >
             <Eye size={20} />
@@ -228,7 +227,7 @@ export default function CompanySettingsPage() {
                           <>
                             <button
                               onClick={() => handleOpenEditModal(record)}
-                              className={buttonHoverClass}
+                              className={btnHoverClass}
                               style={smallButtonStyle}
                             >
                               <Edit2 size={16} />
@@ -236,7 +235,7 @@ export default function CompanySettingsPage() {
                             </button>
                             <button
                               onClick={() => handleDeactivate(record.id, record.company_name)}
-                              className={buttonHoverClass}
+                              className={btnHoverClass}
                               style={smallButtonStyle}
                             >
                               <Ban size={16} />
@@ -247,7 +246,7 @@ export default function CompanySettingsPage() {
                           <>
                             <button
                               onClick={() => handleActivate(record.id, record.company_name)}
-                              className={buttonHoverClass}
+                              className={btnHoverClass}
                               style={smallButtonStyle}
                             >
                               <RefreshCw size={16} />
@@ -255,7 +254,7 @@ export default function CompanySettingsPage() {
                             </button>
                             <button
                               onClick={() => handleDelete(record.id, record.company_name)}
-                              className={buttonHoverClass}
+                              className={btnHoverClass}
                               style={smallButtonStyle}
                             >
                               <Trash2 size={16} />
@@ -274,7 +273,7 @@ export default function CompanySettingsPage() {
       )}
 
       <div className="mt-6">
-        <button onClick={() => router.push('/')} className={buttonHoverClass} style={buttonStyle}>
+        <button onClick={() => router.push('/')} className={btnHoverClass} style={buttonStyle}>
           <ArrowLeft size={20} />
           入力画面へ戻る
         </button>
@@ -303,13 +302,13 @@ export default function CompanySettingsPage() {
             <button
               type="button"
               onClick={() => setIsFormModalOpen(false)}
-              className={buttonHoverClass}
+              className={btnHoverClass}
               style={buttonStyle}
             >
               <X size={20} />
               キャンセル
             </button>
-            <button type="submit" className={buttonHoverClass} style={buttonStyle}>
+            <button type="submit" className={btnHoverClass} style={buttonStyle}>
               <Save size={20} />
               {formMode === 'create' ? '登録' : '更新'}
             </button>

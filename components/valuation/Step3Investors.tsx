@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NumericFormat } from 'react-number-format';
 import { UserPlus, Trash2, ArrowUpDown, Check } from 'lucide-react';
 import { Investor } from '@/lib/types';
@@ -21,7 +21,6 @@ export default function Step3Investors({
     reorderInvestors,
     totalInvestment,
 }: Props) {
-    const buttonStyle = smallButtonStyle;
     const [isReorderMode, setIsReorderMode] = useState(false);
     const [tempInvestors, setTempInvestors] = useState<Investor[]>([]);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -74,14 +73,14 @@ export default function Step3Investors({
                         <>
                             <button
                                 className={buttonHoverClass}
-                                style={buttonStyle}
+                                style={smallButtonStyle}
                                 onClick={handleCancelReorder}
                             >
                                 キャンセル
                             </button>
                             <button
                                 className={buttonHoverClass}
-                                style={buttonStyle}
+                                style={smallButtonStyle}
                                 onClick={handleConfirmReorder}
                             >
                                 <Check size={16} />
@@ -92,7 +91,7 @@ export default function Step3Investors({
                         <>
                             <button
                                 className={buttonHoverClass}
-                                style={buttonStyle}
+                                style={smallButtonStyle}
                                 onClick={handleStartReorder}
                             >
                                 <ArrowUpDown size={16} />
@@ -100,7 +99,7 @@ export default function Step3Investors({
                             </button>
                             <button
                                 className={buttonHoverClass}
-                                style={buttonStyle}
+                                style={smallButtonStyle}
                                 onClick={addInvestorRow}
                             >
                                 <UserPlus size={16} />
@@ -166,7 +165,7 @@ export default function Step3Investors({
                                     <button
                                         className={buttonHoverClass}
                                         style={{
-                                            ...buttonStyle,
+                                            ...smallButtonStyle,
                                             padding: '0.5rem 1rem',
                                             fontSize: '0.875rem',
                                         }}
