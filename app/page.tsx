@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Calculator } from 'lucide-react';
+import { Save, FilePlus, Calculator } from 'lucide-react';
 import Header from '@/components/Header';
 import { Investor } from '@/lib/types';
 import Step0BasicInfo from '@/components/valuation/Step0BasicInfo';
@@ -15,8 +15,9 @@ import { buttonStyle, buttonHoverClass } from '@/lib/button-styles';
 
 export default function Home() {
   const router = useRouter();
-  const { saveValuation, isSaving } = useSaveValuation();
+  const { saveAsNew, saveOverwrite, isSaving } = useSaveValuation();
 
+  const [currentDataId, setCurrentDataId] = useState<string | undefined>(undefined);
   const [fiscalYear, setFiscalYear] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [personInCharge, setPersonInCharge] = useState('');
@@ -40,6 +41,7 @@ export default function Home() {
     if (savedData) {
       try {
         const data = JSON.parse(savedData);
+        setCurrentDataId(data.id);
         setFiscalYear(data.fiscalYear || '');
         setCompanyName(data.companyName || '');
         setPersonInCharge(data.personInCharge || '');
@@ -88,7 +90,7 @@ export default function Home() {
     }
   };
 
-  const saveToDatabase = async () => {
+  const handleSaveAsNew = async () => {
     const validation = validateBasicInfo({ fiscalYear, companyName, personInCharge });
     if (!validation.isValid) {
       alert(validation.message);
@@ -131,9 +133,67 @@ export default function Home() {
       investors: validInvestors,
     };
 
-    const success = await saveValuation(formData);
-    if (success) {
-      alert('データをデータベースに保存しました。');
+    const result = await saveAsNew(formData);
+    if (result.success) {
+      setCurrentDataId(result.id);
+      alert('新規データとして保存しました。');
+    } else {
+      alert('データの保存に失敗しました。再度お試しください。');
+    }
+  };
+
+  const handleSaveOverwrite = async () => {
+    const validation = validateBasicInfo({ fiscalYear, companyName, personInCharge });
+    if (!validation.isValid) {
+      alert(validation.message);
+      return;
+    }
+
+    const step1Validation = validateStep1({ employees, totalAssets, sales });
+    if (!step1Validation.isValid) {
+      alert(step1Validation.message);
+      return;
+    }
+
+    const step2Validation = validateStep2({ currentPeriodNetAsset, netAssetTaxValue, currentPeriodProfit });
+    if (!step2Validation.isValid) {
+      alert(step2Validation.message);
+      return;
+    }
+
+    const step3Validation = validateStep3(investors);
+    if (!step3Validation.isValid) {
+      alert(step3Validation.message);
+      return;
+    }
+
+    const validInvestors = step3Validation.validInvestors!;
+
+    const formData = {
+      id: currentDataId,
+      fiscalYear,
+      companyName,
+      personInCharge,
+      employees,
+      totalAssets,
+      sales,
+      currentPeriodNetAsset: parseFloat(currentPeriodNetAsset) || 0,
+      previousPeriodNetAsset: parseFloat(previousPeriodNetAsset) || 0,
+      netAssetTaxValue: parseFloat(netAssetTaxValue) || 0,
+      currentPeriodProfit: parseFloat(currentPeriodProfit) || 0,
+      previousPeriodProfit: parseFloat(previousPeriodProfit) || 0,
+      previousPreviousPeriodProfit: parseFloat(previousPreviousPeriodProfit) || 0,
+      investors: validInvestors,
+    };
+
+    const result = await saveOverwrite(formData);
+    if (result.success) {
+      setCurrentDataId(result.id);
+      if (currentDataId) {
+        alert('データを上書き保存しました。');
+      } else {
+        alert('新規データとして保存しました。');
+      }
     } else {
       alert('データの保存に失敗しました。再度お試しください。');
     }
@@ -161,6 +221,7 @@ export default function Home() {
     const validInvestors = step3Validation.validInvestors!;
 
     const formData = {
+      id: currentDataId,
       fiscalYear,
       companyName,
       personInCharge,
@@ -182,7 +243,7 @@ export default function Home() {
 
   return (
     <div>
-      <Header />
+      <Header showClearButton={true} />
 
       <div className="card">
         <p className="text-lg mb-4">医療法人の出資持分の評価額の概算を知りたい方向けのツールです。</p>
@@ -251,15 +312,39 @@ export default function Home() {
         totalInvestment={totalInvestment}
       />
 
-      <div className="flex gap-4 mt-8">
-        <button onClick={saveToDatabase} className={buttonHoverClass} style={buttonStyle}>
-          <Save size={20} />
-          保存
-        </button>
-        <button onClick={goToResults} className={buttonHoverClass} style={buttonStyle}>
-          <Calculator size={20} />
-          計算結果を確認する
-        </button>
+      <div className="mt-8">
+        {currentDataId && (
+          <div className="card mb-4 bg-blue-50">
+            <p className="text-sm text-blue-700 m-0">
+              読み込み中のデータID: <span className="font-mono font-semibold">{currentDataId}</span>
+            </p>
+          </div>
+        )}
+
+        <div className="flex gap-4">
+          <button
+            onClick={handleSaveAsNew}
+            className={buttonHoverClass}
+            style={buttonStyle}
+            disabled={isSaving}
+          >
+            <FilePlus size={20} />
+            新規保存
+          </button>
+          <button
+            onClick={handleSaveOverwrite}
+            className={buttonHoverClass}
+            style={buttonStyle}
+            disabled={isSaving}
+          >
+            <Save size={20} />
+            {currentDataId ? '上書保存' : '保存'}
+          </button>
+          <button onClick={goToResults} className={buttonHoverClass} style={buttonStyle}>
+            <Calculator size={20} />
+            計算結果を確認する
+          </button>
+        </div>
       </div>
     </div>
   );
