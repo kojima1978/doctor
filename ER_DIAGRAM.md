@@ -92,26 +92,34 @@
 |---------|-----|------|------|
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 会社ID |
 | company_name | TEXT | NOT NULL UNIQUE | 会社名 |
+| is_active | INTEGER | NOT NULL DEFAULT 1 | 有効フラグ（1:有効, 0:無効）論理削除用 |
 | created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
 | updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+**論理削除**: `is_active = 0` で無効化。データの整合性を維持しながら削除扱いとする。
 
 ### 2. users（担当者マスタ）
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 担当者ID |
 | name | TEXT | NOT NULL UNIQUE | 担当者名 |
+| is_active | INTEGER | NOT NULL DEFAULT 1 | 有効フラグ（1:有効, 0:無効）論理削除用 |
 | created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
 | updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+**論理削除**: `is_active = 0` で無効化。データの整合性を維持しながら削除扱いとする。
 
 ### 3. valuations（評価レコード）
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
-| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 評価ID |
+| id | TEXT | PRIMARY KEY | 評価ID（例: val_1767399557891_m9zhe30a3b8） |
 | company_id | INTEGER | NOT NULL, FK → companies.id | 会社ID |
 | user_id | INTEGER | NOT NULL, FK → users.id | 担当者ID |
 | fiscal_year | TEXT | NOT NULL | 事業年度 |
 | created_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 作成日時 |
 | updated_at | DATETIME | DEFAULT (datetime('now', 'localtime')) | 更新日時 |
+
+**IDの形式**: `val_[タイムスタンプ]_[ランダム文字列]` で一意性を保証
 
 **外部キー制約**:
 - `company_id` → `companies.id` ON DELETE CASCADE
@@ -121,7 +129,7 @@
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 財務データID |
-| valuation_id | INTEGER | NOT NULL, FK → valuations.id | 評価ID |
+| valuation_id | TEXT | NOT NULL, FK → valuations.id | 評価ID |
 | employees | TEXT | | 従業員数 |
 | total_assets | TEXT | | 総資産 |
 | sales | TEXT | | 売上高 |
@@ -141,7 +149,7 @@
 | カラム名 | 型 | 制約 | 説明 |
 |---------|-----|------|------|
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 投資家ID |
-| valuation_id | INTEGER | NOT NULL, FK → valuations.id | 評価ID |
+| valuation_id | TEXT | NOT NULL, FK → valuations.id | 評価ID |
 | investor_name | TEXT | NOT NULL | 投資家名 |
 | shares_held | INTEGER | | 保有株数 |
 | shareholding_ratio | REAL | | 持株比率 |
@@ -292,6 +300,7 @@ erDiagram
     companies {
         INTEGER id PK
         TEXT company_name UK
+        INTEGER is_active
         DATETIME created_at
         DATETIME updated_at
     }
@@ -299,12 +308,13 @@ erDiagram
     users {
         INTEGER id PK
         TEXT name UK
+        INTEGER is_active
         DATETIME created_at
         DATETIME updated_at
     }
 
     valuations {
-        INTEGER id PK
+        TEXT id PK
         INTEGER company_id FK
         INTEGER user_id FK
         TEXT fiscal_year
@@ -314,7 +324,7 @@ erDiagram
 
     financial_data {
         INTEGER id PK
-        INTEGER valuation_id FK
+        TEXT valuation_id FK
         TEXT employees
         TEXT total_assets
         TEXT sales
@@ -330,7 +340,7 @@ erDiagram
 
     investors {
         INTEGER id PK
-        INTEGER valuation_id FK
+        TEXT valuation_id FK
         TEXT investor_name
         INTEGER shares_held
         REAL shareholding_ratio

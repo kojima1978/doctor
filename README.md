@@ -17,9 +17,11 @@
 - **類似業種データ設定**: 類似業種比準方式の基準値管理
 
 ### データ管理機能
-- **計算履歴**: 過去の評価計算の閲覧・削除
+- **保存データ一覧**: 過去の評価計算の閲覧・読込・削除
+- **新規保存/上書保存**: データの保存方法を選択可能
 - **論理削除**: マスタデータの無効化機能（データの整合性維持）
 - **検索・絞り込み**: 各種データの検索とフィルタリング
+- **データクリア**: 入力中のデータをクリア
 
 ## セットアップ
 
@@ -90,51 +92,58 @@ npx tsx scripts/migration-script-name.ts
 
 ## 技術スタック
 
-- **Next.js 15.5.9** - Reactフレームワーク (App Router)
-- **TypeScript** - 型安全性
-- **Tailwind CSS** - スタイリング
-- **SQLite** - データベース (better-sqlite3)
+- **Next.js 16.1.1** - Reactフレームワーク (App Router, Turbopack)
+- **React 19.0.0** - UIライブラリ
+- **TypeScript 5** - 型安全性
+- **Tailwind CSS 3.4** - スタイリング
+- **SQLite** - データベース (better-sqlite3 12.5)
 - **Lucide React** - アイコンライブラリ
 
 ## プロジェクト構造
 
 ```
 doctor-nextjs/
-├── app/                              # Next.js App Router
-│   ├── page.tsx                      # STEP0: 会社・担当者選択
-│   ├── step1/page.tsx                # STEP1: 規模判定
-│   ├── step2/page.tsx                # STEP2: 財務データ入力
-│   ├── step3/page.tsx                # STEP3: 出資者情報入力
-│   ├── results/page.tsx              # 計算結果表示
-│   ├── history/page.tsx              # 計算履歴
-│   ├── company-settings/page.tsx     # 会社マスタ設定
-│   ├── user-settings/page.tsx        # 担当者マスタ設定
-│   ├── similar-industry/page.tsx     # 類似業種データ設定
-│   ├── api/                          # APIルート
-│   │   ├── companies/route.ts        # 会社CRUD API
-│   │   ├── users/route.ts            # 担当者CRUD API
-│   │   ├── valuations/route.ts       # 評価レコードAPI
-│   │   └── similar-industry/route.ts # 類似業種データAPI
-│   ├── layout.tsx                    # ルートレイアウト
-│   └── globals.css                   # グローバルスタイル
+├── app/                                    # Next.js App Router
+│   ├── page.tsx                            # ホーム画面（評価データ入力）
+│   ├── results/page.tsx                    # 計算結果表示
+│   ├── saved-data/page.tsx                 # 保存データ一覧
+│   ├── company-settings/page.tsx           # 会社マスタ設定
+│   ├── user-settings/page.tsx              # 担当者マスタ設定
+│   ├── similar-industry-settings/page.tsx  # 類似業種データ設定
+│   ├── gift-tax-table/page.tsx             # 贈与税速算表
+│   ├── api/                                # APIルート
+│   │   ├── companies/route.ts              # 会社CRUD API
+│   │   ├── users/route.ts                  # 担当者CRUD API
+│   │   ├── valuations/route.ts             # 評価レコードAPI
+│   │   └── similar-industry/route.ts       # 類似業種データAPI
+│   ├── layout.tsx                          # ルートレイアウト
+│   └── globals.css                         # グローバルスタイル
 ├── components/
-│   ├── Header.tsx                    # ヘッダーコンポーネント
-│   ├── Modal.tsx                     # モーダルダイアログ
-│   └── CalculationDetailsModal.tsx   # 計算詳細表示モーダル
+│   ├── Header.tsx                          # ヘッダーコンポーネント
+│   ├── Modal.tsx                           # モーダルダイアログ
+│   └── valuation/                          # 評価入力コンポーネント
+│       ├── Step0BasicInfo.tsx              # 基本情報入力
+│       ├── Step1CompanySize.tsx            # 会社規模判定
+│       ├── Step2FinancialData.tsx          # 財務データ入力
+│       └── Step3Investors.tsx              # 出資者情報入力
+├── hooks/
+│   └── useSaveValuation.ts                 # 保存機能カスタムフック
 ├── lib/
-│   ├── db.ts                         # データベース初期化
-│   ├── db-types.ts                   # データベース型定義
-│   ├── types.ts                      # アプリケーション型定義
-│   ├── calculations.ts               # 評価額計算ロジック
-│   ├── button-styles.ts              # ボタンスタイル定義
-│   ├── form-utils.ts                 # フォームユーティリティ
-│   └── api-utils.ts                  # API共通処理
+│   ├── db.ts                               # データベース初期化
+│   ├── db-types.ts                         # データベース型定義
+│   ├── types.ts                            # アプリケーション型定義
+│   ├── calculations.ts                     # 評価額計算ロジック
+│   ├── button-styles.ts                    # ボタンスタイル定義
+│   ├── form-utils.ts                       # フォームユーティリティ
+│   ├── record-actions.ts                   # レコード操作共通処理
+│   ├── api-utils.ts                        # API共通処理
+│   ├── date-utils.ts                       # 日付変換ユーティリティ
+│   └── utils.ts                            # 汎用ユーティリティ
 ├── data/
-│   └── doctor.db                     # SQLiteデータベース
-├── docs/
-│   └── er-diagram.md                 # データベースER図
-├── Dockerfile                        # Docker設定
-├── docker-compose.yml                # Docker Compose設定
+│   └── doctor.db                           # SQLiteデータベース
+├── ER_DIAGRAM.md                           # データベースER図
+├── Dockerfile                              # Docker設定
+├── docker-compose.yml                      # Docker Compose設定
 └── package.json
 ```
 
