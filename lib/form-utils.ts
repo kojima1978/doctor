@@ -31,8 +31,7 @@ export function handleDoubleClickToStep0(
 export async function handleFormSubmit<T>(
   endpoint: string,
   method: 'POST' | 'PUT',
-  data: T,
-  successMessage: string = '保存しました'
+  data: T
 ): Promise<{ success: boolean; message: string }> {
   try {
     const response = await fetch(endpoint, {
@@ -47,7 +46,7 @@ export async function handleFormSubmit<T>(
       throw new Error(result.error || '保存に失敗しました');
     }
 
-    return { success: true, message: result.message || successMessage };
+    return { success: true, message: result.message || '保存しました' };
   } catch (error) {
     console.error('保存エラー:', error);
     return {

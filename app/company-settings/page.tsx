@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Edit2, Trash2, Save, X, Ban, Eye, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Save, X, Ban, Eye, RefreshCw, Trash2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import { buttonStyle, smallButtonStyle, btnHoverClass } from '@/lib/button-styles';
